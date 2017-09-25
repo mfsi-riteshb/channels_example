@@ -25,8 +25,8 @@ SECRET_KEY = '#=trk_-t6!zr+lv(nt45@g()^upc$6$m=ri&s4a%7^l3epnaw1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['channels-example-demo.herokuapp.com']
-
+ALLOWED_HOSTS = ['https://channels-example-demo.herokuapp.com/']
+#ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -94,10 +94,16 @@ DATABASES = {
 }
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'channel_example',
+#         'USER': 'root',
+#         'PASSWORD': 'mindfire',
+#         'HOST': 'localhost',
+#         'PORT': '3306'
+
 #     }
 # }
+
 
 
 

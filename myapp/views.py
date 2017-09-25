@@ -8,16 +8,25 @@ from django.views.generic import ListView
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
+from django.contrib.auth.views import login
 
 from .models import Room
 from .forms import RoomForm, RoomScreenForm
 # Create your views here.
 
 
+def custom_login(request):
+    if request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('rooms_list'))
+    else:
+        return login(request)
+
 class HomeView(View):
     template_name = 'home.html'
 
     def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('/rooms')
         return render(request, self.template_name)
 
 

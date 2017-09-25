@@ -18,10 +18,11 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 
-from myapp.views import RoomView, RoomDetailView, ScreenView, HomeView
+from myapp.views import RoomView, RoomDetailView, ScreenView, HomeView,custom_login
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'login/$', custom_login, name='custom_login'),
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^', include('registration.backends.default.urls')),
     url(r'^rooms/$', RoomView.as_view(), name="rooms_list"),

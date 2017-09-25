@@ -15,8 +15,8 @@
 				{% if user.is_authenticated %}
                 	<li><a href="{% url 'auth_logout' %}?next=/login">Log out</a></li>
                 {% else %}
-                   	<li><a href="{% url 'auth_login' %}?next=/login">Login</a></li>
-                   	<li><a href="{% url 'registration_register' %}?next=/login">Sign Up</a></li>
+                   	<li><a href="{% url 'auth_login' %}">Login</a></li>
+                   	<li><a href="{% url 'registration_register' %}">Sign Up</a></li>
                 {% endif %}
             </ul>
             <ul class="side-nav" id="mobile-demo">
