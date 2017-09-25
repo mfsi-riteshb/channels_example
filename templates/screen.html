@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+{% block content %}
+<script type="text/javascript" src="/static/ckeditor/ckeditor-init.js"></script>
+<script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
+<div class="container">
+	<h2>Add content Of Screen</h2>
+    <div class="row">
+        <div class="lg12">
+            <form method="POST" enctype="multipart/form-data" class="post-form">{% csrf_token %} {{ form.media }} {{ form.as_p}}
+                <button type="submit" class=" save waves-effect waves-light btn">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+{%endblock%}

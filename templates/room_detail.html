@@ -1,0 +1,69 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+    <h1 class="center-align"> {{ room.name }}</h1> 
+    <div class="row">
+        <div class="s12">
+
+            <div id="text_group">
+            {% if screens %}
+                {%for screen in screens %}
+                    <div style="display:none;">
+                        {{ screen.content|safe }}
+                    </div>
+                {%endfor %}
+            {% else %}
+                <h4>There are no Screens Yet</h4>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if is_owner == True %}
+    <div class="row center-align">
+        <div class="s12">
+            {% if screens %}
+            <a class="waves-effect waves-light btn" onclick="previousText()">Previous</a>
+            {% endif %}
+            <a class="waves-effect waves-light btn" href="{% url 'screen_list' room.id %}">Add Screen</a>
+            {% if screens %}
+            <a class="waves-effect waves-light btn" onclick="nextText()">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+<script>
+socket = new WebSocket("ws://" + window.location.host + "/room/{{ room.id }}");
+var current = {{ current_screen }};
+var previous = current;
+var group_ele = null;
+{% if is_owner == True %}
+
+function nextText() {
+    console.log("send data");
+    socket.send("next");
+}
+
+function previousText() {
+    socket.send("previous");
+}
+
+{% endif %}
+
+socket.onmessage = function(e) {
+    current = parseInt(e.data)
+    $(group_ele[previous]).hide()
+    $(group_ele[current]).show()
+    previous = current
+}
+
+
+socket.onopen = function() {
+   group_ele  = $('#text_group').find('div')
+   $(group_ele[current]).show()
+
+}
+// Call onopen directly if socket is already open
+if (socket.readyState == WebSocket.OPEN) socket.onopen();
+</script>
+{% endblock %}

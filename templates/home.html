@@ -1,0 +1,71 @@
+{% extends 'base.html' %} {% block content %}
+<div id="home_content">
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <br>
+            <br>
+            <h1 class="header center orange-text">Slidy</h1>
+            <div class="row center">
+                <h5 class="header col s12 light">Place to show, what you know, thats too in real time.</h5>
+            </div>
+            <div class="row center">
+                <a href="{% url 'auth_login' %}" id="download-button" class="btn-large waves-effect waves-light orange">Get Started</a>
+            </div>
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="container">
+        <div class="section">
+            <!--   Icon Section   -->
+            <div class="row">
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h4 class="center light-blue-text"><i class="material-icons">CREATE ROOM</i></h4>
+                        <h5 class="center">Create Room for presentation</h5>
+                        <p class="light">You can create any number of rooms, you would like to quickly and activate those room by just entering it so that yours viewers can too enter the room.</p>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h4 class="center light-blue-text"><i class="material-icons">CREATE SCREENS</i></h4>
+                        <h5 class="center">Create Multiple Screen for Each room</h5>
+                        <p class="light">For Each room you can create any number of screen and too with the powerful editor provided by us. You can create any number of screen with different font and images to create a presentation with amazing look and feel.</p>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h4 class="center light-blue-text"><i class="material-icons">EASY ACCESS</i></h4>
+                        <h5 class="center">Easy to work with</h5>
+                        <p class="light">You just need to login, create room, create screens and just enter the room, everything else is on us.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+    </div>
+</div>
+<footer class="page-footer orange">
+    <div class="container">
+        <div class="row">
+            <div class="col l6 s12">
+                <h5 class="white-text">Company Bio</h5>
+                <p class="grey-text text-lighten-4">Lorem Ispum</p>
+            </div>
+            <div class="col l9 s12">
+                <h5 class="white-text text-right">Connect</h5>
+                <ul>
+                    <li><a class="white-text" href="#!">About Us</a></li>
+                    <li><a class="white-text" href="#!">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer-copyright">
+        <div class="container">
+            Made by <a class="orange-text text-lighten-3" href="http://materializecss.com">Ritesh Bisht</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}
