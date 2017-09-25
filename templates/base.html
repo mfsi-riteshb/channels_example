@@ -22,7 +22,12 @@
                 {% endif %}
             </ul>
             <ul class="side-nav" id="mobile-demo">
-                <li><a  href="{% url 'auth_logout' %}?next=/login">Log Out</a></li>
+                {% if user.is_authenticated %}
+                	<li><a href="{% url 'auth_logout' %}?next=/login">Log out</a></li>
+                {% else %}
+                   	<li><a href="{% url 'auth_login' %}">Login</a></li>
+                   	<li><a href="{% url 'registration_register' %}">Sign Up</a></li>
+                {% endif %}
             </ul>
         </div>
        {% block head_list %}
