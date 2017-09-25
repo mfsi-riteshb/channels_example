@@ -83,12 +83,12 @@ WSGI_APPLICATION = 'channels_example.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'channel_example',
-        'USER': 'root',
-        'PASSWORD': 'mindfire',
-        'HOST': 'localhost',
-        'PORT': '3306'
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'dhep8iqovclv2',
+        'USER': 'hoywxzeojeabmr',
+        'PASSWORD': '5ca8e92c15613ba799fc4880e833873887ff92f0e9b7012cd2b0459d1f1fc206',
+        'HOST': 'ec2-107-20-250-195.compute-1.amazonaws.com',
+        'PORT': '5432'
 
     }
 }
