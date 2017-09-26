@@ -25,7 +25,7 @@ SECRET_KEY = '#=trk_-t6!zr+lv(nt45@g()^upc$6$m=ri&s4a%7^l3epnaw1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['channels-example-demo.herokuapp.com']
+ALLOWD_HOSTS = ['channels-example-demo.herokuapp.com']
 #ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -158,10 +158,10 @@ ACCOUNT_ACTIVATION_DAYS = 1
 os.path.join(BASE_DIR, 'templates')
 
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'ritesh.bisht94@gmail.com'
-EMAIL_HOST_PASSWORD = 'Lifeis@4me'
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = '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'
 
 STATIC_URL = 'static/'
 STATIC_ROOT = 'static/'
@@ -180,6 +180,5 @@ CKEDITOR_CONFIGS = {
         'width': 1000,
     },
 }
-
 
 LOGIN_REDIRECT_URL = '/rooms'
