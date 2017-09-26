@@ -13,21 +13,55 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
-from django.contrib import admin
 from django.conf import settings
+from django.conf.urls import url, include
 from django.conf.urls.static import static
+from django.contrib import admin
 
-from myapp.views import RoomView, RoomDetailView, ScreenView, HomeView,custom_login
+from myapp.views import (
+    custom_login,
+    HomeView,
+    RoomDetailView,
+    RoomView,
+    ScreenView,
+)
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'login/$', custom_login, name='custom_login'),
-    url(r'^$', HomeView.as_view(), name='home'),
-    url(r'^', include('registration.backends.default.urls')),
-    url(r'^rooms/$', RoomView.as_view(), name="rooms_list"),
-    url(r'^room/(?P<pk>[0-9])/screens/$', ScreenView.as_view(), name="screen_list"),
-    url(r'^room/(?P<pk>[0-9])/$', RoomDetailView.as_view(), name="rooms_detail"),
-    url(r'^ckeditor/', include('ckeditor_uploader.urls'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + \
-    static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    url(
+        r'^admin/',
+        admin.site.urls
+    ),
+    url(
+        r'login/$',
+        custom_login,
+        name='custom_login'
+    ),
+    url(
+        r'^$',
+        HomeView.as_view(),
+        name='home'
+    ),
+    url(
+        r'^',
+        include('registration.backends.default.urls')
+    ),
+    url(
+        r'^rooms/$',
+        RoomView.as_view(),
+        name="rooms_list"
+    ),
+    url(
+        r'^room/(?P<pk>[0-9])/screens/$',
+        ScreenView.as_view(),
+        name="screen_list"
+    ),
+    url(
+        r'^room/(?P<pk>[0-9])/$',
+        RoomDetailView.as_view(),
+        name="rooms_detail"
+    ),
+    url(
+        r'^ckeditor/',
+        include('ckeditor_uploader.urls')
+    )
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

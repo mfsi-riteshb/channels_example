@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from datetime import datetime
 
@@ -12,29 +13,71 @@ from django.contrib.auth.views import login
 
 from .models import Room
 from .forms import RoomForm, RoomScreenForm
-# Create your views here.
 
 
 def custom_login(request):
-    if request.user.is_authenticated():
+    """Handle Custom login.
+
+    Args:
+        request: instance of Request object
+
+    Returns:
+        if user is authenticated return room_list page
+        else redirect to login
+    """
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('rooms_list'))
     else:
         return login(request)
 
+
 class HomeView(View):
+    """Get the home page."""
+
     template_name = 'home.html'
 
     def get(self, request, *args, **kwargs):
+        """Handle get request.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Returns:
+            if user is authetnticated redirect to room
+            else return rendered response of template 'home.html'
+        """
         if request.user.is_authenticated:
             return redirect('/rooms')
         return render(request, self.template_name)
 
 
 class RoomView(View):
+    """Get/Post Room.
+
+    GET - Get List of room
+    POST - Creation of room
+    Redirect to Login if  not authenticated.
+    """
+
     template_name = 'rooms_list.html'
     form = RoomForm
 
     def get(self, request, *args, **kwargs):
+        """Handle GET request.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Returns:
+            if user is authenticated
+                return rendered 'room_list.html' with user and form object
+            else
+                Redirect to login
+        """
         if request.user.is_authenticated:
             rooms = Room.objects.all()
             return render(
@@ -42,9 +85,25 @@ class RoomView(View):
                 {'rooms': rooms, 'user': self.request.user, 'form': self.form}
             )
         else:
-            return redirect('/login')
+            return redirect(request, '/login')
 
     def post(self, request, *args, **kwargs):
+        """Handle POST requests.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Returns:
+            if user is authenticated
+                if form valid
+                    save form and redirect to /rooms
+                else
+                    return render(request, 'screen.html', {'form': form})
+            else
+                redirect to login
+        """
         if request.user.is_authenticated:
             form = self.form(request.POST, request.FILES)
             if form.is_valid():
@@ -53,15 +112,39 @@ class RoomView(View):
                 room.created_at = datetime.now()
                 room.save()
                 return redirect('/rooms', foo='bar')
-            return render_to_response('/rooms', {'form': form})
+            return render_to_response('', {'form': form})
         else:
             return redirect(request, '/login')
 
 
 class RoomDetailView(View):
+    """GET - Detail of the room."""
+
     template_name = 'room_detail.html'
 
     def get(self, request, *args, **kwargs):
+        """Handle GET Request.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Return:
+            if user is authenticated
+                return rendered 'room_detail.html' with following data
+                    -- Room object
+                    -- is_owner boolean
+                    -- screens
+                    -- current_screen
+                    -- total_screen
+            else:
+                redirect to login page
+
+        Raises:
+        Room.DoesNotExist:
+            if room is not yet active OR room does not exist
+        """
         if request.user.is_authenticated:
             try:
                 room = Room.objects.get(id=self.kwargs.get('pk', None))
@@ -82,14 +165,31 @@ class RoomDetailView(View):
                 }
             )
         else:
-            return redirect('/login')
+            return redirect(request, '/login')
 
 
 class ScreenView(View):
+    """Handle screen GET/POST request."""
+
     template_name = 'screen.html'
     form = RoomScreenForm
 
     def get(self, request, *args, **kwargs):
+        """Handle GET requests.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Return:
+            rendered 'screen.html' template with user and form object
+            and screens queryset
+
+        Raises:
+        Room.DoesNotExist:
+            if room.user != request.user OR room does not exist
+        """
         try:
             room = Room.objects.get(id=self.kwargs.get('pk', None))
             if room.user != request.user:
@@ -104,6 +204,22 @@ class ScreenView(View):
         )
 
     def post(self, request, *args, **kwargs):
+        """Handle POST requests.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Return:
+            if user authenticated
+                if form is valid
+                    Redirect to rooms_detail
+                else
+                    Return rendered 'screen.html' with form object
+            else
+                Redirect to login
+        """
         if request.user.is_authenticated:
             room_id = self.kwargs['pk']
             try:
@@ -118,6 +234,6 @@ class ScreenView(View):
                 return HttpResponseRedirect(reverse('rooms_detail', args=[room.id]))
 
             else:
-                return render_to_response('/rooms', {'form': form})
+                return render(request, 'screen.html', {'form': form})
         else:
-            return redirect('/login')
+            return redirect(request, '/login')

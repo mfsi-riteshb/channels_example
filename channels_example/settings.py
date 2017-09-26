@@ -26,7 +26,7 @@ SECRET_KEY = '#=trk_-t6!zr+lv(nt45@g()^upc$6$m=ri&s4a%7^l3epnaw1'
 DEBUG = True
 
 ALLOWED_HOSTS = ['channels-example-demo.herokuapp.com']
-#ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -163,8 +163,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = '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'
 
-STATIC_URL = 'static/'
-STATIC_ROOT = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

@@ -1,9 +1,20 @@
+# -*- coding: utf-8 -*-
+
 from django.db import models
 from django.contrib.auth.models import User
-# Create your models here.
+
 from ckeditor_uploader.fields import RichTextUploadingField
 
+
 class Room(models.Model):
+    """Room model."""
+
+    class Meta:
+        """Meta Room."""
+
+        verbose_name = "Room"
+        verbose_name_plural = "Rooms"
+
     name = models.CharField(max_length=50)
     description = models.TextField()
     user = models.ForeignKey(User, related_name="rooms")
@@ -15,5 +26,13 @@ class Room(models.Model):
 
 
 class Screen(models.Model):
+    """Screen model."""
+
+    class Meta:
+        """Meta Screen."""
+
+        verbose_name = "Screen"
+        verbose_name_plural = "Screens"
+
     content = RichTextUploadingField(max_length=50000)
     room = models.ForeignKey(Room, related_name='screens')
