@@ -147,7 +147,10 @@ USE_TZ = True
 # In settings.py
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "asgiref.inmemory.ChannelLayer",
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        },
         "ROUTING": "channels_example.routing.channel_routing",
     },
 }
