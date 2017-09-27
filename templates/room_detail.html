@@ -57,7 +57,7 @@ function draw(){
 
     }
 }
-
+{% if not screens %}
 function prepareCanvas()
 {
     // Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
@@ -80,8 +80,8 @@ function prepareCanvas()
     
 }
         prepareCanvas();
-
-    {% if is_owner %}
+{% endif %}
+    {% if is_owner and not screens %}
         document.getElementById('canvas').addEventListener('mousedown',function(e){
             paint=true;
            // console.log(e.pageX, e.pageY);
@@ -124,7 +124,8 @@ function prepareCanvas()
         }
 
         {% endif %}
-        {% if is_owner == False %}
+
+        {% if is_owner == False and not screens %}
         socket.onmessage = function(e) {
             if(e.data.length > 10){
                 data_arr = e.data.split(":")
@@ -144,6 +145,14 @@ function prepareCanvas()
                 previous = current
             }
         }
+        {% else %}
+            socket.onmessage = function(e) {
+                current = parseInt(e.data)
+                $(group_ele[previous]).hide()
+                $(group_ele[current]).show()
+                previous = current
+            
+            }
         {% endif %}
 
 
