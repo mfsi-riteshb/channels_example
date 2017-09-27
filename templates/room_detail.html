@@ -14,7 +14,8 @@
                         </div>
                     {%endfor %}
                 {% else %}
-                    <h4>There are no Screens Yet</h4>
+                    <div id="canvasDiv"></div>
+                        <script type="text/javascript"></script>
                 {% endif %}
                 </div>
             </div>
@@ -35,6 +36,78 @@
     </div>
     </body>
     <script>
+        /**
+* Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
+*/
+var paint = false;
+var clickX = Array()
+var clickY = Array()
+var ctx;
+var canvasX;
+var canvasY;
+
+function draw(){
+    for(var i=0 ; i < clickX.length; i++) {
+        ctx.beginPath();              
+        ctx.lineWidth = "5";
+        ctx.strokeStyle = "green";  // Green path
+        ctx.moveTo(clickX[i-1], clickY[i-1] );
+        ctx.lineTo(clickX[i], clickY[i]);
+        ctx.stroke();  // Draw it
+
+    }
+}
+
+function prepareCanvas()
+{
+    // Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
+    var canvasDiv = document.getElementById('canvasDiv');
+    canvas = document.createElement('canvas');
+    canvas.setAttribute('width', 1000);
+    canvas.setAttribute('height', 1000);
+    canvas.setAttribute('id', 'canvas');
+    canvas.style.border = "solid 1px black"
+    canvasDiv.appendChild(canvas);
+    if(typeof G_vmlCanvasManager != 'undefined') {
+        canvas = G_vmlCanvasManager.initElement(canvas);
+    }
+    ctx = canvas.getContext("2d"); // Grab the 2d canvas context
+    // Note: The above code is a workaround for IE 8 and lower. Otherwise we could have used:
+    //     context = document.getElementById('canvas').getContext("2d");
+
+    // Add mouse events
+    // ----------------
+    
+}
+        prepareCanvas();
+
+    {% if is_owner %}
+        document.getElementById('canvas').addEventListener('mousedown',function(e){
+            paint=true;
+           // console.log(e.pageX, e.pageY);
+        });
+        document.getElementById('canvas').addEventListener('mousemove', function(e){
+            if(paint==true){
+               clickX.push(e.pageX - canvas.offsetLeft);
+               clickY.push(e.pageY - canvas.offsetTop);
+               draw();
+            }
+
+        });
+        document.getElementById('canvas').addEventListener('mouseleave', function(e){
+            paint = false
+        });
+        document.getElementById('canvas').addEventListener('mouseup', function(e){
+            paint = false;
+            str = clickX.join(',') + ":" + clickY.join(',')
+            socket.send(str)
+            clickX = Array()
+            clickY = Array()
+
+        });
+    {% endif %}
+    
+
         socket = new WebSocket("wss://" + window.location.host + "/room/{{ room.id }}");
         var current = {{ current_screen }};
         var previous = current;
@@ -51,17 +124,30 @@
         }
 
         {% endif %}
-
+        {% if is_owner == False %}
         socket.onmessage = function(e) {
-            current = parseInt(e.data)
-            $(group_ele[previous]).hide()
-            $(group_ele[current]).show()
-            previous = current
+            if(e.data.length > 10){
+                data_arr = e.data.split(":")
+                clickX = data_arr[0].split(',')
+                clickY = data_arr[1].split(',')
+                for(var i=0; i< clickX.length; i++)
+                {
+                   draw()
+                }
+               
+                
+            }
+            else{
+                current = parseInt(e.data)
+                $(group_ele[previous]).hide()
+                $(group_ele[current]).show()
+                previous = current
+            }
         }
+        {% endif %}
 
 
         socket.onopen = function() {
-           $("")
            group_ele  = $('#text_group').find('div')
            $(group_ele[current]).show()
 

@@ -83,7 +83,9 @@ def ws_receive(message):
                     room.current_screen = total_screens - 1
                 room.save()
             else:
-                return
+                Group('Room-' + str(room_id)).send(
+                    {'text': str(message.content['text'])}
+                )
         else:
             return
     except Room.DoesNotExist:
