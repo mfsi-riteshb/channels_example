@@ -152,7 +152,7 @@ class RoomDetailView(View):
             except Room.DoesNotExist:
                 raise Http404("Room does not exist")
             if not room.is_active and room.user != request.user:
-                raise Http404("Room is not yet active")
+                return render(request, self.template_name, {'room': None})
             return render(
                 request,
                 self.template_name,

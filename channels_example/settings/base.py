@@ -15,18 +15,17 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '#=trk_-t6!zr+lv(nt45@g()^upc$6$m=ri&s4a%7^l3epnaw1'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['channels-example-demo.herokuapp.com']
-# ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['channels-example-demo.herokuapp.com']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -62,7 +61,7 @@ ROOT_URLCONF = 'channels_example.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, '../templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,29 +85,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dhep8iqovclv2',
         'USER': 'hoywxzeojeabmr',
-        'PASSWORD': '5ca8e92c15613ba799fc4880e833873887ff92f0e9b7012cd2b0459d1f1fc206',
+        'PASSWORD': os.environ.get('DB_PASSWORD', None),
         'HOST': 'ec2-107-20-250-195.compute-1.amazonaws.com',
         'PORT': '5432'
 
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'channel_example',
-#         'USER': 'root',
-#         'PASSWORD': 'mindfire',
-#         'HOST': 'localhost',
-#         'PORT': '3306'
 
-#     }
-# }
-
-
-
-
-# Password validation
-# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -140,10 +123,6 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-
 # In settings.py
 CHANNEL_LAYERS = {
     "default": {
@@ -157,19 +136,22 @@ CHANNEL_LAYERS = {
 ACCOUNT_ACTIVATION_DAYS = 1
 os.path.join(BASE_DIR, 'templates')
 
+# Email Settings
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'apikey'
-EMAIL_HOST_PASSWORD = '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'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', None)
 
+# Static content
 STATIC_URL = '/static/'
-STATIC_ROOT = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '../static')
+
+# Media content
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CKEDITOR_UPLOAD_PATH = "uploads/"
-
+CKEDITOR_UPLOAD_PATH = "/uploads/ckeditor_upload/"
 CKEDITOR_CONFIGS = {
     'awesome_ckeditor': {
         'toolbar': 'Custom',

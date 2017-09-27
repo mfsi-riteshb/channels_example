@@ -17,7 +17,7 @@
         {% for room in rooms %}
 	        <div class="card horizontal">
 	            <div class="card-image">
-	                <img src="{{ room.image }}">
+	                <img height="100" width="100"src="/media/{{ room.image }}">
 	            </div>
 	            <div class="card-stacked">
 	                <div class="card-content">
@@ -36,8 +36,27 @@
     <div class="container">
         <div class="row">
             <h2>Create Room</h2>
-            <form method="POST" enctype="multipart/form-data" class="post-form">{% csrf_token %} {{ form.as_p }}
+            <form method="POST" enctype="multipart/form-data" class="post-form">{% csrf_token %}
+            <div class="input-field col s12">
+                {{ form.name }}
+                <label for="name" class="active">Room Name</label>
+            </div>
+            <div class="input-field col s12">
+                {{ form.description }}
+                <label for="description" class="active">Room Name</label>
+            </div>
+            <div class="col s12 file-field input-field">
+                <div class="btn">
+                  <span>File</span>
+                {{ form.image }}
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path validate valid" type="text">
+                </div>
+            </div>
+            <div class="row center-align">
                 <button type="submit" class="save btn btn-default">Save</button>
+                </div>
             </form>
         </div>
     </div>

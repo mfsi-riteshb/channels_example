@@ -19,7 +19,7 @@ class Room(models.Model):
     description = models.TextField()
     user = models.ForeignKey(User, related_name="rooms")
     created_at = models.DateTimeField(auto_now=True)
-    image = models.FileField()
+    image = models.FileField(upload_to='room_thumbnails')
     current_screen = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
     number_of_current_user = models.IntegerField(default=0)
