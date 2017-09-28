@@ -85,7 +85,7 @@ class RoomView(View):
                 {'rooms': rooms, 'user': self.request.user, 'form': self.form}
             )
         else:
-            return redirect(request, '/login')
+            return redirect('/login')
 
     def post(self, request, *args, **kwargs):
         """Handle POST requests.
@@ -114,7 +114,7 @@ class RoomView(View):
                 return redirect('/rooms', foo='bar')
             return render_to_response('', {'form': form})
         else:
-            return redirect(request, '/login')
+            return redirect('/login')
 
 
 class RoomDetailView(View):
@@ -165,7 +165,7 @@ class RoomDetailView(View):
                 }
             )
         else:
-            return redirect(request, '/login')
+            return redirect('/login')
 
 
 class ScreenView(View):
@@ -236,4 +236,4 @@ class ScreenView(View):
             else:
                 return render(request, 'screen.html', {'form': form})
         else:
-            return redirect(request, '/login')
+            return redirect('/login')
