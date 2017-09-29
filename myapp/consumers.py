@@ -32,6 +32,9 @@ def ws_connect(message):
     except:
         return
     Group('Room-' + room_id).add(message.reply_channel)
+    Group('Room-' + str(room_id)).send(
+        {'text': 'user_joined:{}'.format(message.user)}
+    )
     message.channel_session['room'] = room.id
     message.reply_channel.send({"accept": True})
 
@@ -62,7 +65,6 @@ def ws_receive(message):
 
         # we are doing (total_screen -1) as index of screen starts from 0
         if room.user == message.user:
-
             # if message is next we increase the current screen if value of
             # current screen is less than the total_screen value, else
             # we make current screen 0
@@ -115,3 +117,6 @@ def ws_disconnect(message):
     else:
         room.number_of_current_user -= 1
         room.save()
+    Group('Room-' + str(room_id)).send(
+        {'text': '{} has left'.format(message.user)}
+    )

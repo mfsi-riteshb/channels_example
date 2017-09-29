@@ -1,23 +1,42 @@
 {% extends 'base.html' %} {% block content %}
 
 {% if room %}
-    <div class="container">
+    <div class="container-fluid">
         <h1 class="center-align"> {{ room.name }}</h1> 
         <div class="row">
-            <div class="s12">
+            <div class="col s8 col m8">
 
-                <div id="text_group">
-                {% if screens %}
-                    {%for screen in screens %}
-                        <div style="display:none;">
-                            {{ screen.content|safe }}
+                    {% if screens %}
+                        <div class="reveal">
+                            <div class="slides">
+                                    {%for screen in screens %}
+                                        <div style="display:none;">
+                                            <section>  {{ screen.content|safe }}</section>
+                                        </div>
+                                    {%endfor %}
+                            </div>
                         </div>
-                    {%endfor %}
-                {% else %}
-                    <div id="canvasDiv"></div>
-                        <script type="text/javascript"></script>
+                            
+                        {% else %}
+                        <div class="reveal">
+                            <div class="slides">
+                                <section class="canvasDiv">
+                                </section>
+                                <section class="canvasDiv">
+                                </section>
+                                <section class="canvasDiv">
+                                </section>
+                            </div>
+                        </div>
                 {% endif %}
-                </div>
+            </div>
+            <div class="col s4 col m4">
+            <div class="row">
+                <h4 class="center-align"> Members</h4>
+                <ul id="members_list" class="collection">
+
+                </ul>
+            </div>
             </div>
         </div>
         {% if is_owner == True %}
@@ -34,7 +53,7 @@
         </div>
         {% endif %}
     </div>
-    </body>
+
     <script>
         /**
 * Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
@@ -42,12 +61,26 @@
 var paint = false;
 var clickX = Array()
 var clickY = Array()
-var ctx;
+var ctx = Array();
+var current_user = "{{ user }}"
 var canvasX;
 var canvasY;
+var strokestyle = 'green'
+var lineWidth = '5'
+var current_slide=0;
 
-function draw(){
+function getContext(canvas) {
+     if(typeof G_vmlCanvasManager != 'undefined') {
+            canvas = G_vmlCanvasManager.initElement(canvas);
+        }
+        ctx = canvas.getContext("2d"); // Grab the 2d canvas context
+        // Note: The above code is a workaround for IE 8 and lower. Otherwise we could have used:
+        //     context = document.getElementById('canvas').getContext("2d");
+    return ctx
+}
+function draw(ctx){
     for(var i=0 ; i < clickX.length; i++) {
+         
         ctx.beginPath();              
         ctx.lineWidth = "5";
         ctx.strokeStyle = "green";  // Green path
@@ -57,57 +90,76 @@ function draw(){
 
     }
 }
+
+// function usernameAlreadyPresent(user_name){
+//     ul = $("#members_list").find("li")
+//     for(var i =0; i< ul.length;i++){
+//         var temp_name = ul[i].text();
+
+//     }
+// }
 {% if not screens %}
 function prepareCanvas()
 {
     // Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
-    var canvasDiv = document.getElementById('canvasDiv');
-    canvas = document.createElement('canvas');
-    canvas.setAttribute('width', 1000);
-    canvas.setAttribute('height', 1000);
-    canvas.setAttribute('id', 'canvas');
-    canvas.style.border = "solid 1px black"
-    canvasDiv.appendChild(canvas);
-    if(typeof G_vmlCanvasManager != 'undefined') {
-        canvas = G_vmlCanvasManager.initElement(canvas);
-    }
-    ctx = canvas.getContext("2d"); // Grab the 2d canvas context
-    // Note: The above code is a workaround for IE 8 and lower. Otherwise we could have used:
-    //     context = document.getElementById('canvas').getContext("2d");
 
-    // Add mouse events
-    // ----------------
+    var canvasDiv = document.getElementsByClassName('canvasDiv');
+    for (var k=0; k< canvasDiv.length; k++){
+        canvas = document.createElement('canvas');
+        canvas.setAttribute('width', 900);
+        canvas.setAttribute('height', 600);
+        canvas.setAttribute('id', 'canvas');
+        canvas.style.border = "solid 1px black"
+        canvasDiv[k].appendChild(canvas);
+        if(typeof G_vmlCanvasManager != 'undefined') {
+            canvas = G_vmlCanvasManager.initElement(canvas);
+        }
+        ctx[k] = canvas.getContext("2d"); // Grab the 2d canvas context
+        // Note: The above code is a workaround for IE 8 and lower. Otherwise we could have used:
+        //     context = document.getElementById('canvas').getContext("2d");
+
+        // Add mouse events
+        // ----------------
     
+    }
+   
 }
+
         prepareCanvas();
 {% endif %}
     {% if is_owner and not screens %}
-        document.getElementById('canvas').addEventListener('mousedown',function(e){
-            paint=true;
-           // console.log(e.pageX, e.pageY);
-        });
-        document.getElementById('canvas').addEventListener('mousemove', function(e){
-            if(paint==true){
-               clickX.push(e.pageX - canvas.offsetLeft);
-               clickY.push(e.pageY - canvas.offsetTop);
-               draw();
-            }
+        var canvasDiv = document.getElementsByClassName('canvasDiv');
+        for (var k=0; k< canvasDiv.length; k++){
+            canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
+            canvas.addEventListener('mousedown',function(e){
+                paint=true;
+               // console.log(e.pageX, e.pageY);
+            });
+            canvas.addEventListener('mousemove', function(e){
+                if(paint==true){
 
-        });
-        document.getElementById('canvas').addEventListener('mouseleave', function(e){
-            paint = false
-        });
-        document.getElementById('canvas').addEventListener('mouseup', function(e){
-            paint = false;
-            str = clickX.join(',') + ":" + clickY.join(',')
-            socket.send(str)
-            clickX = Array()
-            clickY = Array()
+                   clickX.push(e.pageX - e.target.parentElement.parentElement.parentElement.offsetLeft );
+                   clickY.push(e.pageY - e.target.parentElement.parentElement.offsetTop +(272-197)+ 20);
 
-        });
+                   draw(getContext(e.target));
+                }
+
+            });
+            canvas.addEventListener('mouseleave', function(e){
+                paint = false
+            });
+            canvas.addEventListener('mouseup', function(e){
+                paint = false;
+                str = "canvas_data:" + clickX.join(',') + ";" + clickY.join(',')
+                socket.send(str)
+                clickX = Array()
+                clickY = Array()
+
+            });
+
+        }
     {% endif %}
-    
-
+       
         socket = new WebSocket("wss://" + window.location.host + "/room/{{ room.id }}");
         var current = {{ current_screen }};
         var previous = current;
@@ -116,30 +168,46 @@ function prepareCanvas()
 
         function nextText() {
             console.log("send data");
-            socket.send("next");
+            socket.send("instruction:next");
         }
 
         function previousText() {
-            socket.send("previous");
+            socket.send("instruction:previous");
         }
-
+instruction:
         {% endif %}
 
         {% if is_owner == False and not screens %}
         socket.onmessage = function(e) {
-            if(e.data.length > 10){
-                data_arr = e.data.split(":")
+            instruction = e.data.split(":")[0]
+            data = e.data.split(":")[1]
+            if (instruction == 'user_joined'){
+                if(data != current_user){
+                    ul = $("#members_list")
+                    str = "<li>"+ data +"</li>"
+                    ul.append(str)
+                }
+            }
+            if (instruction == 'slide_change'){
+                Reveal.slide(parseInt(data));
+                current_slide = parseInt(data)
+            }
+
+            else if(instruction=='canvas_data'){
+                data_arr = data.split(";")
                 clickX = data_arr[0].split(',')
                 clickY = data_arr[1].split(',')
                 for(var i=0; i< clickX.length; i++)
                 {
-                   draw()
+                    var canvasDiv = document.getElementsByClassName('canvasDiv');
+                    canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
+                    draw(getContext(canvas))
                 }
                
                 
             }
             else{
-                current = parseInt(e.data)
+                current = parseInt(data)
                 $(group_ele[previous]).hide()
                 $(group_ele[current]).show()
                 previous = current
@@ -147,7 +215,16 @@ function prepareCanvas()
         }
         {% else %}
             socket.onmessage = function(e) {
-                current = parseInt(e.data)
+                instruction = e.data.split(":")[0]
+                data = e.data.split(":")[1]
+                if (instruction == 'user_joined'){
+                    if(data != current_user){
+                    ul = $("#members_list")
+                    str = "<li>"+ data +"</li>"
+                    ul.append(str)
+                    }
+                }
+                current = parseInt(data)
                 $(group_ele[previous]).hide()
                 $(group_ele[current]).show()
                 previous = current
@@ -164,6 +241,16 @@ function prepareCanvas()
         // Call onopen directly if socket is already open
         if (socket.readyState == WebSocket.OPEN) socket.onopen();
     </script>
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@3.5.0/js/reveal.min.js"></script>
+        <script>
+            Reveal.initialize();
+             {% if is_owner %}
+        Reveal.addEventListener('slidechanged', function(evt) {
+            current_slide = evt.indexh
+            socket.send('slide_change:'+ current_slide)
+        });
+        {% endif %}
+        </script>
     {% else %}
         <h4 class="center-align"> Room not yet active</h4>
     {% endif %}
