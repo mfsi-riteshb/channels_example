@@ -1,45 +1,7 @@
 {% extends 'base.html' %} {% block content %}
 
 {% if room %}
-    <div class="container-fluid">
-        <h1 class="center-align"> {{ room.name }}</h1> 
-        <div class="row">
-            <div class="col s8 col m8">
-
-                    {% if screens %}
-                        <div class="reveal">
-                            <div class="slides">
-                                    {%for screen in screens %}
-                                        <div style="display:none;">
-                                            <section>  {{ screen.content|safe }}</section>
-                                        </div>
-                                    {%endfor %}
-                            </div>
-                        </div>
-                            
-                        {% else %}
-                        <div class="reveal">
-                            <div class="slides">
-                                <section class="canvasDiv">
-                                </section>
-                                <section class="canvasDiv">
-                                </section>
-                                <section class="canvasDiv">
-                                </section>
-                            </div>
-                        </div>
-                {% endif %}
-            </div>
-            <div class="col s4 col m4">
-            <div class="row">
-                <h4 class="center-align"> Members</h4>
-                <ul id="members_list" class="collection">
-
-                </ul>
-            </div>
-            </div>
-        </div>
-        {% if is_owner == True %}
+    {% if is_owner == True %}
         <div class="row center-align">
             <div class="s12">
                 {% if screens %}
@@ -52,12 +14,53 @@
             </div>
         </div>
         {% endif %}
+    <div class="container-fluid">
+        <h1 class="center-align"> {{ room.name }}</h1> 
+        <div class="row">
+            <div class="col s10 col m10">
+
+                    {% if screens %}
+                        <div class="reveal">
+                            <div class="slides">
+                                    {%for screen in screens %}
+                                        <div style="display:none;">
+                                            <section>  {{ screen.content|safe }}</section>
+                                        </div>
+                                    {%endfor %}
+                            </div>
+                        </div>
+                            
+                    {% else %}
+                        <div class="reveal">
+                            <div class="slides">
+                                <section class="canvasDiv">
+                                </section>
+                                <section class="canvasDiv">
+                                </section>
+                                <section class="canvasDiv">
+                                </section>
+                            </div>
+                        </div>
+                {% endif %}
+            </div>
+            <div class="col s2 col m2">
+            <div class="row">
+                <h4 class="center-align"> Members</h4>
+                {% if is_owner%}
+                <ul id="members_list_owner" class="collection">
+
+                </ul>
+                {% else %}
+                <ul id="members_list_attendees" class="collection">
+                </ul>
+                {% endif %}
+            </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        /**
-* Creates a canvas element, loads images, adds events, and draws the canvas for the first time.
-*/
+<script>
+
 var paint = false;
 var clickX = Array()
 var clickY = Array()
@@ -69,6 +72,10 @@ var strokestyle = 'green'
 var lineWidth = '5'
 var current_slide=0;
 
+
+/* Functions used by both owner and attendees of room */
+
+// get context of canvas
 function getContext(canvas) {
      if(typeof G_vmlCanvasManager != 'undefined') {
             canvas = G_vmlCanvasManager.initElement(canvas);
@@ -78,6 +85,8 @@ function getContext(canvas) {
         //     context = document.getElementById('canvas').getContext("2d");
     return ctx
 }
+
+// Passing context of current slide canvas and draw on it.
 function draw(ctx){
     for(var i=0 ; i < clickX.length; i++) {
          
@@ -91,146 +100,207 @@ function draw(ctx){
     }
 }
 
-// function usernameAlreadyPresent(user_name){
-//     ul = $("#members_list").find("li")
-//     for(var i =0; i< ul.length;i++){
-//         var temp_name = ul[i].text();
-
-//     }
-// }
-{% if not screens %}
-function prepareCanvas()
+// Get left offset of the canvas
+function getOffsetLeft( elem )
 {
-    // Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
-
-    var canvasDiv = document.getElementsByClassName('canvasDiv');
-    for (var k=0; k< canvasDiv.length; k++){
-        canvas = document.createElement('canvas');
-        canvas.setAttribute('width', 900);
-        canvas.setAttribute('height', 600);
-        canvas.setAttribute('id', 'canvas');
-        canvas.style.border = "solid 1px black"
-        canvasDiv[k].appendChild(canvas);
-        if(typeof G_vmlCanvasManager != 'undefined') {
-            canvas = G_vmlCanvasManager.initElement(canvas);
-        }
-        ctx[k] = canvas.getContext("2d"); // Grab the 2d canvas context
-        // Note: The above code is a workaround for IE 8 and lower. Otherwise we could have used:
-        //     context = document.getElementById('canvas').getContext("2d");
-
-        // Add mouse events
-        // ----------------
-    
-    }
-   
+    var offsetLeft = 0;
+    do {
+      if ( !isNaN( elem.offsetLeft ) )
+      {
+          offsetLeft += elem.offsetLeft;
+      }
+    } while( elem = elem.offsetParent );
+    return offsetLeft;
 }
 
-        prepareCanvas();
-{% endif %}
-    {% if is_owner and not screens %}
+// Get top offset of the canvas.
+function getOffsetTop(elem) {
+    var offsetTop = 0;
+    do {
+      if ( !isNaN( elem.offsetTop ) )
+      {
+          offsetTop += elem.offsetTop;
+      }
+    } while( elem = elem.offsetParent );
+    return offsetTop;
+
+}
+
+//change screen created by owner.
+function changeScreen(data){
+    current = parseInt(data)
+    $(group_ele[previous]).hide()
+    $(group_ele[current]).show()
+    previous = current
+}
+
+// show message using jquery toast plugin.
+function showMessage(message){
+    $.toast({ 
+        text : message, 
+        showHideTransition : 'slide'  // It can be plain, fade or slide
+    })
+}
+
+//Upadte list of current active user.
+function updateActiveUserList(container, user_arr) {
+    var str = ''
+    // We are comparing with 1 as we are getting current user also from
+    // backend.
+    if(user_arr.length > 1 ){
+            for(var i=0; i< user_arr.length; i++){
+                if(user_arr[i]!=current_user){
+                    str += "<li>"+ user_arr[i] +"</li>"
+                }
+            } 
+        }
+    else {
+        str = 'There are no attendees yet.'
+    }
+    container.empty()
+    container.append(str)
+}
+
+// We are showing canvas only when there are no screens added. i.e for new room.
+{% if not screens %}
+
+// Prepare canvas for different slides and add it to screen.
+    function prepareCanvas()
+    {
+        // Create the canvas (Neccessary for IE because it doesn't know what a canvas element is)
+
         var canvasDiv = document.getElementsByClassName('canvasDiv');
         for (var k=0; k< canvasDiv.length; k++){
-            canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
-            canvas.addEventListener('mousedown',function(e){
-                paint=true;
-               // console.log(e.pageX, e.pageY);
-            });
-            canvas.addEventListener('mousemove', function(e){
-                if(paint==true){
-
-                   clickX.push(e.pageX - e.target.parentElement.parentElement.parentElement.offsetLeft );
-                   clickY.push(e.pageY - e.target.parentElement.parentElement.offsetTop +(272-197)+ 20);
-
-                   draw(getContext(e.target));
-                }
-
-            });
-            canvas.addEventListener('mouseleave', function(e){
-                paint = false
-            });
-            canvas.addEventListener('mouseup', function(e){
-                paint = false;
-                str = "canvas_data:" + clickX.join(',') + ";" + clickY.join(',')
-                socket.send(str)
-                clickX = Array()
-                clickY = Array()
-
-            });
-
+            canvas = document.createElement('canvas');
+            canvas.setAttribute('width', 900);
+            canvas.setAttribute('height', 600);
+            canvas.setAttribute('id', 'canvas');
+            canvas.style.border = "solid 1px black"
+            canvasDiv[k].appendChild(canvas);
         }
-    {% endif %}
        
-        socket = new WebSocket("wss://" + window.location.host + "/room/{{ room.id }}");
-        var current = {{ current_screen }};
-        var previous = current;
-        var group_ele = null;
-        {% if is_owner == True %}
+    }
+    prepareCanvas();
+{% endif %}
 
-        function nextText() {
-            console.log("send data");
-            socket.send("instruction:next");
+    // these event listener are added for canvas for owner of room.
+{% if is_owner and not screens %}
+    var canvasDiv = document.getElementsByClassName('canvasDiv');
+    for (var k=0; k< canvasDiv.length; k++){
+        canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
+        canvas.addEventListener('mousedown',function(e){
+            paint=true;
+           // console.log(e.pageX, e.pageY);
+        });
+        canvas.addEventListener('mousemove', function(e){
+            if(paint==true){
+               clickX.push(e.pageX - getOffsetLeft(e.target));
+               clickY.push(e.pageY - getOffsetTop(e.target));
+
+               draw(getContext(e.target));
+            }
+
+        });
+        canvas.addEventListener('mouseleave', function(e){
+            paint = false
+        });
+        canvas.addEventListener('mouseup', function(e){
+            paint = false;
+            str = "canvas_data:-" + clickX.join(',') + ";" + clickY.join(',')
+            socket.send(str)
+            clickX = Array()
+            clickY = Array()
+
+        });
+
+    }
+{% endif %}
+       
+// Make socket connection once user enters the room
+socket = new WebSocket("ws://" + window.location.host + "/room/{{ room.id }}");
+var current = {{ current_screen }};
+var previous = current;
+var group_ele = null;
+
+//socket signals send by only owner of room.
+{% if is_owner == True %}
+
+    function nextText() {
+        console.log("send data");
+        socket.send("instruction:-next");
+    }
+
+    function previousText() {
+        socket.send("instruction:-previous");
+    }
+{% endif %}
+
+// socket signals received by attendees of room.
+{% if is_owner == False and not screens %}
+socket.onmessage = function(e) {
+    instruction = e.data.split(":-")[0]
+    data = e.data.split(":-")[1]
+    if (instruction == 'user_joined'){                      // update list for current active user.
+        user_arr = JSON.parse(data)['text']
+        ul = $("#members_list_attendees")
+        updateActiveUserList(ul, user_arr)
+        
+    }
+    if (instruction == 'slide_change'){                     // Change slide
+        Reveal.slide(parseInt(data));
+        current_slide = parseInt(data)
+    }
+
+    else if(instruction=='canvas_data'){                    //show canvas data
+        data_arr = data.split(";")
+        clickX = data_arr[0].split(',')
+        clickY = data_arr[1].split(',')
+        for(var i=0; i< clickX.length; i++)
+        {
+            var canvasDiv = document.getElementsByClassName('canvasDiv');
+            canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
+            draw(getContext(canvas))
         }
-
-        function previousText() {
-            socket.send("instruction:previous");
+       
+        
+    }
+    else if(instruction=='joined'){                         // show message who joined
+        if(data.split(" ")[0] != current_user){
+            showMessage(data)
         }
-instruction:
-        {% endif %}
-
-        {% if is_owner == False and not screens %}
-        socket.onmessage = function(e) {
-            instruction = e.data.split(":")[0]
-            data = e.data.split(":")[1]
-            if (instruction == 'user_joined'){
-                if(data != current_user){
-                    ul = $("#members_list")
-                    str = "<li>"+ data +"</li>"
-                    ul.append(str)
-                }
-            }
-            if (instruction == 'slide_change'){
-                Reveal.slide(parseInt(data));
-                current_slide = parseInt(data)
-            }
-
-            else if(instruction=='canvas_data'){
-                data_arr = data.split(";")
-                clickX = data_arr[0].split(',')
-                clickY = data_arr[1].split(',')
-                for(var i=0; i< clickX.length; i++)
-                {
-                    var canvasDiv = document.getElementsByClassName('canvasDiv');
-                    canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
-                    draw(getContext(canvas))
-                }
-               
-                
-            }
-            else{
-                current = parseInt(data)
-                $(group_ele[previous]).hide()
-                $(group_ele[current]).show()
-                previous = current
+    }
+    else if(instruction=='left'){
+        showMessage(data)
+    }
+    else{                                                   // change screen fot room having screens
+       changeScreen(data)
+    }
+}
+// socket signals recieved by owner of the room.
+{% else %}
+    socket.onmessage = function(e) {
+        instruction = e.data.split(":-")[0]
+        data = e.data.split(":-")[1]
+        if (instruction == 'user_joined'){                  // Update active user screen.
+            user_arr = JSON.parse(data)['text']
+            ul = $("#members_list_owner")
+            updateActiveUserList(ul, user_arr)
+        }
+        else if(instruction=='joined'){                     // Show who joined the room.
+            if(data.split(" ")[0] != current_user){
+               showMessage(data)
             }
         }
-        {% else %}
-            socket.onmessage = function(e) {
-                instruction = e.data.split(":")[0]
-                data = e.data.split(":")[1]
-                if (instruction == 'user_joined'){
-                    if(data != current_user){
-                    ul = $("#members_list")
-                    str = "<li>"+ data +"</li>"
-                    ul.append(str)
-                    }
-                }
-                current = parseInt(data)
-                $(group_ele[previous]).hide()
-                $(group_ele[current]).show()
-                previous = current
-            
-            }
-        {% endif %}
+        else if(instruction=='left'){
+            showMessage(data)
+        }
+        else{
+            changeScreen(data)
+        }
+     
+    
+    }
+{% endif %}
 
 
         socket.onopen = function() {
@@ -240,15 +310,23 @@ instruction:
         }
         // Call onopen directly if socket is already open
         if (socket.readyState == WebSocket.OPEN) socket.onopen();
-    </script>
+</script>
         <script src="https://cdn.jsdelivr.net/npm/reveal.js@3.5.0/js/reveal.min.js"></script>
         <script>
-            Reveal.initialize();
-             {% if is_owner %}
-        Reveal.addEventListener('slidechanged', function(evt) {
-            current_slide = evt.indexh
-            socket.send('slide_change:'+ current_slide)
-        });
+            Reveal.initialize({
+                width: "100%",
+                height: "100%",
+                margin: 0,
+                minScale: 1,
+                maxScale: 1
+            });
+
+        // add slidechanged eventlistener for onwer of the room only
+        {% if is_owner %}
+            Reveal.addEventListener('slidechanged', function(evt) {
+                current_slide = evt.indexh
+                socket.send('slide_change:-'+ current_slide)
+            });
         {% endif %}
         </script>
     {% else %}

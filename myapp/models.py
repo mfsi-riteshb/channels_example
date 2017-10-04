@@ -36,3 +36,15 @@ class Screen(models.Model):
 
     content = RichTextUploadingField(max_length=50000)
     room = models.ForeignKey(Room, related_name='screens')
+
+
+class RoomActiveUser(models.Model):
+    """RoomActiveUserModel."""
+
+    class Meta:
+        """RoomActiveUser Meta."""
+
+        unique_together = (("room", "user"),)
+
+    user = models.ForeignKey(User, related_name='active_rooms')
+    room = models.ForeignKey(Room, related_name='active_rooms')

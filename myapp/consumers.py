@@ -1,9 +1,13 @@
 
-from channels import Group
-from channels.auth import http_session_user, channel_session_user, channel_session_user_from_http  
-from channels.sessions import channel_session
+import json
 
-from .models import Room
+from channels import Group
+from channels.auth import (
+    channel_session_user,
+    channel_session_user_from_http
+)
+
+from .models import Room, RoomActiveUser
 
 
 @channel_session_user_from_http
@@ -12,6 +16,7 @@ def ws_connect(message):
 
     When user connect to room which he owns then make the room active,
     else increase the number of current_user.
+    And make entry in room_active_user table.
 
     Args:
         message: Channels Message object.
@@ -28,13 +33,32 @@ def ws_connect(message):
             room.is_active = True
         else:
             room.number_of_current_user += 1
+        try:
+            RoomActiveUser.objects.create(user=message.user, room=room)
+        except Exception:
+            pass
         room.save()
     except:
         return
+
     Group('Room-' + room_id).add(message.reply_channel)
-    Group('Room-' + str(room_id)).send(
-        {'text': 'user_joined:{}'.format(message.user)}
-    )
+
+    # create list of all the current active users adn sent it through socket
+    active_users = []
+    for active_user in RoomActiveUser.objects.all():
+        active_users.append(str(active_user.user))
+
+    Group('Room-' + str(room_id)).send({
+        "text": "user_joined:-" + json.dumps({
+            "text": active_users
+        })
+    })
+
+    # send message as who is the new joinee.
+    Group('Room-' + str(room_id)).send({
+        "text": 'joined:-{} has joined'.format(message.user)
+    })
+
     message.channel_session['room'] = room.id
     message.reply_channel.send({"accept": True})
 
@@ -51,7 +75,8 @@ def ws_receive(message):
         message: Channels Message object
 
     Return:
-        current screen of the the room for which request came.
+        -- Brodcast current screen of the the room for which request came.
+        -- Or broadcast data came from frontend.
     """
     try:
         room_id = message.channel_session['room']
@@ -101,15 +126,17 @@ def ws_disconnect(message):
 
     Once the user disconnect, if he owns the room make the room inactive
     or if user doesn't owns the room reduce number_of_current user.
+    and send current active user's list
 
     Args:
         message: Channel Message object.
 
     Return:
-        No return
+        Broadcast current active user and message for user leaving room.
     """
     room_id = message.channel_session['room']
     room = Room.objects.get(id=room_id)
+
     if message.user == room.user:
         room.is_active = False
         room.number_of_current_user = 0
@@ -117,6 +144,24 @@ def ws_disconnect(message):
     else:
         room.number_of_current_user -= 1
         room.save()
-    Group('Room-' + str(room_id)).send(
-        {'text': '{} has left'.format(message.user)}
-    )
+
+    try:
+        RoomActiveUser.objects.get(user=message.user, room=room).delete()
+    except RoomActiveUser.DoesNotExist:
+        pass
+
+    active_users = []
+
+    for active_user in RoomActiveUser.objects.all():
+        active_users.append(str(active_user.user))
+
+    Group('Room-' + str(room_id)).send({
+        "text": "user_joined:-" + json.dumps({
+            "text": active_users
+        })
+    })
+
+    # send message as who is the new joinee.
+    Group('Room-' + str(room_id)).send({
+        "text": 'left:-{} has left the room'.format(message.user)
+    })
