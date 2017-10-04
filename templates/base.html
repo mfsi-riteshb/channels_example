@@ -9,6 +9,31 @@
 .canvasDiv {
   top:0px !important;
 }
+body {
+  overflow-y: scroll;
+}
+#room_detail_section  sub{
+  font-size: 14px;
+}
+#room_detail {
+  padding: 0px 0px 3px 10px;
+  background-color: lavender;
+}
+#screens {
+  margin: 10px;
+  background-color: lavender;
+}
+#text_group {
+  min-height: 500px;
+  overflow-y: scroll;
+  background-color: white;
+}
+#current_slide_number, #current_screen_number{
+  float: right;
+}
+#active_users{
+  background-color: lavender;
+}
 </style>
 
 <body>
@@ -19,6 +44,7 @@
             <ul id="nav-mobile" class="right hide-on-med-and-down">
 				{% if user.is_authenticated %}
                 	<li><a href="{% url 'auth_logout' %}?next=/login">Log out</a></li>
+                  <li>{{ user }}</li>
                 {% else %}
                    	<li><a href="{% url 'auth_login' %}">Login</a></li>
                    	<li><a href="{% url 'registration_register' %}">Sign Up</a></li>

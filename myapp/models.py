@@ -23,6 +23,7 @@ class Room(models.Model):
     current_screen = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
     number_of_current_user = models.IntegerField(default=0)
+    number_of_slides = models.IntegerField(default=1)
 
 
 class Screen(models.Model):

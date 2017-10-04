@@ -117,7 +117,9 @@ def ws_receive(message):
             return
     except Room.DoesNotExist:
         return
-    Group('Room-' + str(room_id)).send({'text': str(room.current_screen)})
+    Group('Room-' + str(room_id)).send(
+        {'text': message.content['text'] + ":-" + str(room.current_screen)}
+    )
 
 
 @channel_session_user

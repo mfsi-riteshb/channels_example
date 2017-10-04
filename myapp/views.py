@@ -10,8 +10,9 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.views import login
+from django.views.generic import UpdateView
 
-from .models import Room
+from .models import Room, Screen
 from .forms import RoomForm, RoomScreenForm
 
 
@@ -122,6 +123,17 @@ class RoomDetailView(View):
 
     template_name = 'room_detail.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        # Try to dispatch to the right method; if a method doesn't exist,
+        # defer to the error handler. Also defer to the error handler if the
+        # request method isn't on the approved list.
+        method = self.request.POST.get('_method', '').lower()
+        if method == 'put':
+            return self.put(request, *args, **kwargs)
+        if method == 'delete':
+            return self.delete(*args, **kwargs)
+        return super(RoomDetailView, self).dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         """Handle GET Request.
 
@@ -161,11 +173,23 @@ class RoomDetailView(View):
                     'is_owner': room.user == request.user,
                     'screens': screens,
                     'current_screen': room.current_screen,
-                    'total_screens': room.screens.count() - 1
+                    'total_screens': room.screens.count(),
+                    'number_of_slides': list(range(room.number_of_slides))
                 }
             )
         else:
             return redirect('/login')
+
+    def put(self, request, *args, **kwargs):
+        number_of_slides = int(request.POST['number_of_slides'])
+        try:
+            room = Room.objects.get(id=self.kwargs.get('pk', None))
+            room.number_of_slides += number_of_slides
+            room.save()
+        except Room.DoesNotExist:
+            raise Http404("Room does not exist")
+
+        return HttpResponseRedirect(reverse('rooms_detail', args=[room.id]))
 
 
 class ScreenView(View):
@@ -223,7 +247,7 @@ class ScreenView(View):
         if request.user.is_authenticated:
             room_id = self.kwargs['pk']
             try:
-                room = Room.objects.get(pk=room_id)
+                room = Room.objects.get(pk=room_id, user=request)
             except Room.DoesNotExist:
                 return Http404("Room Does Not Exist")
             form = self.form(request.POST)
@@ -235,5 +259,86 @@ class ScreenView(View):
 
             else:
                 return render(request, 'screen.html', {'form': form})
+        else:
+            return redirect('/login')
+
+
+class ScreenViewDetail(View):
+
+    template_name = 'screen.html'
+    form = RoomScreenForm
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Return:
+            if user authenticated
+                if form valid
+                    redirect to rooms_detail
+                else
+                    return rendered 'screen.html' with form object
+            else
+                redirect to login
+
+        """
+        if request.user.is_authenticated:
+            room_id = self.kwargs.get('pk', None)
+            try:
+                Room.objects.get(id=room_id, user=request.user)
+                try:
+                    screen = Screen.objects.get(id=self.kwargs.get('screen_id', None))
+                except Screen.DoesNotExist:
+                    raise Http404("Screen does not exist")
+            except Room.DoesNotExist:
+                raise Http404("Room does not exist")
+            form = RoomScreenForm(instance=screen)
+            return render(
+                request, self.template_name,
+                {'user': self.request.user, 'form': form}
+            )
+        else:
+            return redirect('/login')
+
+    def post(self, request, *args, **kwargs):
+        """Handle PUT requests.
+
+        Args:
+            request: instance of Request object
+            *args: non-keyworded, variable-length argument list
+            **kwargs: keyworded, variable-length argument list
+
+        Return:
+            if user authenticated
+                if form valid
+                    redirect to rooms_detail
+                else
+                    return rendered 'screen.html' with form object
+            else
+                redirect to login
+        """
+        if request.user.is_authenticated:
+            room_id = self.kwargs['pk']
+            try:
+                room = Room.objects.get(pk=room_id, user=request.user)
+                try:
+                    screen = Screen.objects.get(pk=self.kwargs.get('screen_id', None))
+                    form = RoomScreenForm(request.POST, instance=screen)
+                    if form.is_valid():
+                        form.save()
+                        return HttpResponseRedirect(
+                            reverse('rooms_detail', args=[room.id])
+                        )
+                    else:
+                        return render(request, 'screen.html', {'form': form})
+
+                except Screen.DoesNotExist:
+                    return Http404("Screen Does not exist")
+            except Room.DoesNotExist:
+                return Http404("Room Does not exist")
         else:
             return redirect('/login')

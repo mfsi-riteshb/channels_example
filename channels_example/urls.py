@@ -25,6 +25,7 @@ from myapp.views import (
     RoomDetailView,
     RoomView,
     ScreenView,
+    ScreenViewDetail
 )
 from myapp.forms import MyRegistrationFormUniqueEmail
 
@@ -61,6 +62,11 @@ urlpatterns = [
         r'^room/(?P<pk>[0-9])/screens/$',
         ScreenView.as_view(),
         name="screen_list"
+    ),
+    url(
+        r'^room/(?P<pk>[0-9])/screen/(?P<screen_id>[0-9]+)$',
+        ScreenViewDetail.as_view(),
+        name="screen_detail"
     ),
     url(
         r'^room/(?P<pk>[0-9])/$',

@@ -1,64 +1,116 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+{% block head_list %}
+<div class="nav-content">
+    <ul class="tabs tabs-transparent">
+        <li class="tab"><a href="#screens">Work on Screens</a></li>
+        <li class="tab"><a href="#slides_screen">work on Slides</a></li>
+    </ul>
+</div>
+{% endblock%}
+ {% block content %}
+
+
 
 {% if room %}
-    {% if is_owner == True %}
-        <div class="row center-align">
-            <div class="s12">
-                {% if screens %}
-                <a class="waves-effect waves-light btn" onclick="previousText()">Previous</a>
+    <div class="container-fluid" id="room_detail_section">
+    <div class="card" id="room_detail">
+        <h1 > {{ room.name }}<sub>Created by ({{ room.user }})</sub></h1>
+        <hr>
+        <label>Description</label> 
+        <p> {{ room.description }}</p>
+    </div>
+        <div class="row">
+        <div class="col s10 m10">
+            <div class="row card" id="screens">
+            {% if is_owner == True %}
+            <div class="row">
+                <div class="s12">
+                    {% if screens %}
+                    <a class="waves-effect waves-light btn" onclick="previousText()">Previous</a>
+                    <a class="waves-effect waves-light btn" onclick="nextText()">Next</a>
+                    {% endif %}
+                    <a class="waves-effect waves-light btn" href="{% url 'screen_list' room.id %}">Add Screen</a>
+                    
+                </div>
+            </div>
+            {% endif %}
+             {% if screens %}
+                 <div class="col s12 m12">
+                <span><label>Number of Screens:-</label>
+                {{ total_screens }}</span>
+                <span id="current_screen_number"><label>Current Screen:-</label>
+                <span id="current_screen">{{ current_screen }}</span></span>
+                </div>
+                <hr>
+                <div id="text_group" style="border: solid 1 px black; padding: 10px; margin: 10px;">
+                {% for screen in screens %}
+                    <div style="display:none;">
+                         {{ screen.content|safe }}
+                        <a href="/room/{{ room.id }}/screen/{{ screen.id }}"<button style="position:absolute;bottom:0px; right:0px;" class="waves-effect waves-light btn" >Edit Screen</button></a>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                There are no screens yet
+            {% endif %}
+            </div>
+            <div class="row" id="slides_screen">
+                {% if is_owner %}
+                    <div class="col s5 m5">
+                    <form method="POST">{% csrf_token %}
+                      <input type="hidden" name="_method" value="put" />
+                    <label>Number of slides</label>
+                      <select class="browser-default"  name="number_of_slides">
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                        <option value="5">5</option>
+                      </select>
+                        <button type="submit" class="waves-effect waves-light btn">Add Slide</button>
+                        </form>
+                    </div>
                 {% endif %}
-                <a class="waves-effect waves-light btn" href="{% url 'screen_list' room.id %}">Add Screen</a>
-                {% if screens %}
-                <a class="waves-effect waves-light btn" onclick="nextText()">Next</a>
-                {% endif %}
+                <div class="col s10 m10">
+                <span ><label>Number of slides:-</label>
+                {{ room.number_of_slides }}</span>
+                <span id="current_slide_number"><label>Current Slide:-</label>
+                <span id="current_slide">1</span></span>
+                </div>
+                <div class="col s10 col m10"> 
+                    <div class="reveal">
+                        <div class="slides">
+                          {%for number in number_of_slides %}
+                           <section class="canvasDiv">
+                            </section>
+                          {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        {% endif %}
-    <div class="container-fluid">
-        <h1 class="center-align"> {{ room.name }}</h1> 
-        <div class="row">
-            <div class="col s10 col m10">
-
-                    {% if screens %}
-                        <div class="reveal">
-                            <div class="slides">
-                                    {%for screen in screens %}
-                                        <div style="display:none;">
-                                            <section>  {{ screen.content|safe }}</section>
-                                        </div>
-                                    {%endfor %}
-                            </div>
-                        </div>
-                            
+        <div class="col s2 col m2 " >
+                <div class="row card" id="active_users">
+                    <h5 class="center-align"> Members</h5>
+                    <hr>
+                    {% if is_owner%}
+                    <h5>Attendees</h5>
+                    <ul id="members_list_owner" class="collection">
+                    </ul>
                     {% else %}
-                        <div class="reveal">
-                            <div class="slides">
-                                <section class="canvasDiv">
-                                </section>
-                                <section class="canvasDiv">
-                                </section>
-                                <section class="canvasDiv">
-                                </section>
-                            </div>
-                        </div>
-                {% endif %}
-            </div>
-            <div class="col s2 col m2">
-            <div class="row">
-                <h4 class="center-align"> Members</h4>
-                {% if is_owner%}
-                <ul id="members_list_owner" class="collection">
-
-                </ul>
-                {% else %}
-                <ul id="members_list_attendees" class="collection">
-                </ul>
-                {% endif %}
-            </div>
-            </div>
+                    <h5>Creator</h5>
+                    <ul>
+                     <li>{{ room.user }}(Creator)</li>
+                    </ul>
+                    <h5>Attendees</h5>
+                    <ul id="members_list_attendees" class="collection">
+                    </ul>
+                    {% endif %}
+                </div>
+        </div>
         </div>
     </div>
+<!---
 
+-->
 <script>
 
 var paint = false;
@@ -132,6 +184,7 @@ function changeScreen(data){
     $(group_ele[previous]).hide()
     $(group_ele[current]).show()
     previous = current
+    $("#current_screen").text(current+1)
 }
 
 // show message using jquery toast plugin.
@@ -162,7 +215,6 @@ function updateActiveUserList(container, user_arr) {
 }
 
 // We are showing canvas only when there are no screens added. i.e for new room.
-{% if not screens %}
 
 // Prepare canvas for different slides and add it to screen.
     function prepareCanvas()
@@ -172,7 +224,7 @@ function updateActiveUserList(container, user_arr) {
         var canvasDiv = document.getElementsByClassName('canvasDiv');
         for (var k=0; k< canvasDiv.length; k++){
             canvas = document.createElement('canvas');
-            canvas.setAttribute('width', 900);
+            canvas.setAttribute('width', 800);
             canvas.setAttribute('height', 600);
             canvas.setAttribute('id', 'canvas');
             canvas.style.border = "solid 1px black"
@@ -181,10 +233,9 @@ function updateActiveUserList(container, user_arr) {
        
     }
     prepareCanvas();
-{% endif %}
 
     // these event listener are added for canvas for owner of room.
-{% if is_owner and not screens %}
+{% if is_owner%}
     var canvasDiv = document.getElementsByClassName('canvasDiv');
     for (var k=0; k< canvasDiv.length; k++){
         canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
@@ -195,7 +246,7 @@ function updateActiveUserList(container, user_arr) {
         canvas.addEventListener('mousemove', function(e){
             if(paint==true){
                clickX.push(e.pageX - getOffsetLeft(e.target));
-               clickY.push(e.pageY - getOffsetTop(e.target));
+               clickY.push(e.pageY - (getOffsetTop(e.target)-document.body.scrollTop));
 
                draw(getContext(e.target));
             }
@@ -227,16 +278,16 @@ var group_ele = null;
 
     function nextText() {
         console.log("send data");
-        socket.send("instruction:-next");
+        socket.send("next");
     }
 
     function previousText() {
-        socket.send("instruction:-previous");
+        socket.send("previous");
     }
 {% endif %}
 
 // socket signals received by attendees of room.
-{% if is_owner == False and not screens %}
+{% if is_owner == False %}
 socket.onmessage = function(e) {
     instruction = e.data.split(":-")[0]
     data = e.data.split(":-")[1]
@@ -249,8 +300,8 @@ socket.onmessage = function(e) {
     if (instruction == 'slide_change'){                     // Change slide
         Reveal.slide(parseInt(data));
         current_slide = parseInt(data)
+        $("#current_slide").text(current_slide)
     }
-
     else if(instruction=='canvas_data'){                    //show canvas data
         data_arr = data.split(";")
         clickX = data_arr[0].split(',')
@@ -261,8 +312,6 @@ socket.onmessage = function(e) {
             canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
             draw(getContext(canvas))
         }
-       
-        
     }
     else if(instruction=='joined'){                         // show message who joined
         if(data.split(" ")[0] != current_user){
@@ -270,9 +319,11 @@ socket.onmessage = function(e) {
         }
     }
     else if(instruction=='left'){
-        showMessage(data)
+        if(data.split(" ")[0] != current_user){
+            showMessage(data)
+        }
     }
-    else{                                                   // change screen fot room having screens
+    else if(instruction=='next' || instruction == 'previous'){                                                   // change screen fot room having screens
        changeScreen(data)
     }
 }
@@ -286,16 +337,18 @@ socket.onmessage = function(e) {
             ul = $("#members_list_owner")
             updateActiveUserList(ul, user_arr)
         }
-        else if(instruction=='joined'){                     // Show who joined the room.
+        else if(instruction=='joined'){  
             if(data.split(" ")[0] != current_user){
                showMessage(data)
             }
         }
         else if(instruction=='left'){
-            showMessage(data)
+            if(data.split(" ")[0] != current_user){
+                showMessage(data)
+            }
         }
-        else{
-            changeScreen(data)
+        else if(instruction=='next' || instruction == 'previous'){                                                 // change screen fot room having screens
+           changeScreen(data)
         }
      
     
@@ -305,7 +358,7 @@ socket.onmessage = function(e) {
 
         socket.onopen = function() {
            group_ele  = $('#text_group').find('div')
-           $(group_ele[current]).show()
+           changeScreen(current)
 
         }
         // Call onopen directly if socket is already open
@@ -320,14 +373,12 @@ socket.onmessage = function(e) {
                 minScale: 1,
                 maxScale: 1
             });
-
         // add slidechanged eventlistener for onwer of the room only
-        {% if is_owner %}
             Reveal.addEventListener('slidechanged', function(evt) {
                 current_slide = evt.indexh
                 socket.send('slide_change:-'+ current_slide)
+                $("#current_slide").text(current_slide + 1)
             });
-        {% endif %}
         </script>
     {% else %}
         <h4 class="center-align"> Room not yet active</h4>
