@@ -59,7 +59,7 @@ urlpatterns = [
         name="rooms_list"
     ),
     url(
-        r'^room/(?P<pk>[0-9])/screens/$',
+        r'^room/(?P<pk>[0-9]+)/screens/$',
         ScreenView.as_view(),
         name="screen_list"
     ),
@@ -69,7 +69,7 @@ urlpatterns = [
         name="screen_detail"
     ),
     url(
-        r'^room/(?P<pk>[0-9])/$',
+        r'^room/(?P<pk>[0-9]+)/$',
         RoomDetailView.as_view(),
         name="rooms_detail"
     ),
