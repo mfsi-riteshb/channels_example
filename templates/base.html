@@ -5,12 +5,22 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"></head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.5.0/css/reveal.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rasterizehtml/1.2.4/rasterizeHTML.allinone.js"></script>
+
 <style>
 .canvasDiv {
   top:0px !important;
 }
+label {
+  color:black;
+}
+canvas {
+    background: #ffffff;
+}
 body {
   overflow-y: scroll;
+  background: #aba0b3;
 }
 #room_detail_section  sub{
   font-size: 14px;
@@ -24,6 +34,7 @@ body {
   background-color: lavender;
 }
 #text_group {
+  max-height: 500px;
   min-height: 500px;
   overflow-y: scroll;
   background-color: white;
@@ -67,12 +78,17 @@ body {
 		{% endblock %}
 	</div>
 </body>
- <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+(function($){
+  $(function(){
+
+    $('.button-collapse').sideNav();
+
+  }); // end of document ready
+})(jQuery); // end of jQuery name space
+</script>
     <!-- Compiled and minified JavaScript -->
  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.js"></script>
-       {% load static %}
- <script src="{% static 'js/init.js'%}"></script>
-
 </html>
 

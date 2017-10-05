@@ -20,11 +20,11 @@
         <p> {{ room.description }}</p>
     </div>
         <div class="row">
-        <div class="col s10 m10">
+        <div class="col s10 m10" >
             <div class="row card" id="screens">
             {% if is_owner == True %}
             <div class="row">
-                <div class="s12">
+                <div class="s12" style="padding: 8px 8px 5px 24px;">
                     {% if screens %}
                     <a class="waves-effect waves-light btn" onclick="previousText()">Previous</a>
                     <a class="waves-effect waves-light btn" onclick="nextText()">Next</a>
@@ -44,11 +44,11 @@
                 <hr>
                 <div id="text_group" style="border: solid 1 px black; padding: 10px; margin: 10px;">
                 {% for screen in screens %}
-                    <div style="display:none;">
+                    <div style="display:none;" class="canvasScreen">
                          {{ screen.content|safe }}
-                         {% if is_owner %}
+                           <!--{% if is_owner %}
                         <a href="/room/{{ room.id }}/screen/{{ screen.id }}"<button style="position:absolute;bottom:0px; right:0px;" class="waves-effect waves-light btn" >Edit Screen</button></a>
-                        {% endif %}
+                        {% endif %}-->
                     </div>
                 {% endfor %}
                 </div>
@@ -115,9 +115,12 @@
 -->
 <script>
 
-var paint = false;
-var clickX = Array()
-var clickY = Array()
+var paintSlide = false;
+var paintScreen = false;
+var clickXSlide = Array()
+var clickYSlide = Array()
+var clickXScreen = Array()
+var clickYScreen = Array()
 var ctx = Array();
 var current_user = "{{ user }}"
 var canvasX;
@@ -141,7 +144,7 @@ function getContext(canvas) {
 }
 
 // Passing context of current slide canvas and draw on it.
-function draw(ctx){
+function draw(ctx, clickX, clickY){
     for(var i=0 ; i < clickX.length; i++) {
          
         ctx.beginPath();              
@@ -234,7 +237,29 @@ function updateActiveUserList(container, user_arr) {
         }
        
     }
+
+    function prepareCanvasForScreen(){
+        var DOMURL = window.URL || window.webkitURL || window;
+
+        var canvasScreen = document.getElementsByClassName('canvasScreen');
+        img = [];
+        ctx = [];
+        for (var k=0; k< canvasScreen.length; k++){
+            canvas = document.createElement('canvas');
+            canvas.setAttribute('width', 900);
+            canvas.setAttribute('height', 2000);
+            canvas.setAttribute('id', 'canvas');
+            canvas.style.border = "solid 1px black"
+            text = $(canvasScreen[k]).html()
+            $(canvasScreen[k]).empty()
+            canvasScreen[k].appendChild(canvas);
+            ctx = getContext(canvas)
+            rasterizeHTML.drawHTML(text, canvas);
+   
+        }
+    }
     prepareCanvas();
+    prepareCanvasForScreen()
 
     // these event listener are added for canvas for owner of room.
 {% if is_owner%}
@@ -242,27 +267,59 @@ function updateActiveUserList(container, user_arr) {
     for (var k=0; k< canvasDiv.length; k++){
         canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
         canvas.addEventListener('mousedown',function(e){
-            paint=true;
+            paintSlide=true;
            // console.log(e.pageX, e.pageY);
         });
         canvas.addEventListener('mousemove', function(e){
-            if(paint==true){
-               clickX.push(e.pageX - getOffsetLeft(e.target));
-               clickY.push(e.pageY - (getOffsetTop(e.target)-document.body.scrollTop));
+            if(paintSlide==true){
+               clickXSlide.push(e.pageX - getOffsetLeft(e.target));
+               clickYSlide.push(e.pageY - (getOffsetTop(e.target)-document.body.scrollTop));
 
-               draw(getContext(e.target));
+               draw(getContext(e.target), clickXSlide, clickYSlide);
             }
 
         });
         canvas.addEventListener('mouseleave', function(e){
-            paint = false
+            paintSlide = false
         });
         canvas.addEventListener('mouseup', function(e){
-            paint = false;
-            str = "canvas_data:-" + clickX.join(',') + ";" + clickY.join(',')
+            console.log(new Blob([clickXSlide]).size)
+            console.log(new Blob([clickYSlide]).size)
+            paintSlide = false;
+            str = "canvas_data:-" + clickXSlide.join(',') + ";" + clickYSlide.join(',')
             socket.send(str)
-            clickX = Array()
-            clickY = Array()
+            clickXSlide = Array()
+            clickYSlide = Array()
+
+        });
+
+    }
+
+    var canvasScreen = document.getElementsByClassName('canvasScreen');
+    for (var k=0; k< canvasScreen.length; k++){
+        canvas = canvasScreen[k].getElementsByTagName('canvas')[0]
+        canvas.addEventListener('mousedown',function(e){
+            paintScreen=true;
+           // console.log(e.pageX, e.pageY);
+        });
+        canvas.addEventListener('mousemove', function(e){
+            if(paintScreen==true){
+               clickXScreen.push(e.pageX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft()));
+               clickYScreen.push(e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop));
+
+               draw(getContext(e.target), clickXScreen, clickYScreen);
+            }
+
+        });
+        canvas.addEventListener('mouseleave', function(e){
+            paintScreen = false
+        });
+        canvas.addEventListener('mouseup', function(e){
+            paintScreen = false;
+            str = "screen_canvas_data:-" + clickXScreen.join(',') + ";" + clickYScreen.join(',')
+            socket.send(str)
+            clickXScreen = Array()
+            clickYScreen = Array()
 
         });
 
@@ -306,14 +363,19 @@ socket.onmessage = function(e) {
     }
     else if(instruction=='canvas_data'){                    //show canvas data
         data_arr = data.split(";")
-        clickX = data_arr[0].split(',')
-        clickY = data_arr[1].split(',')
-        for(var i=0; i< clickX.length; i++)
-        {
-            var canvasDiv = document.getElementsByClassName('canvasDiv');
-            canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
-            draw(getContext(canvas))
-        }
+        clickXSlide = data_arr[0].split(',')
+        clickYSlide = data_arr[1].split(',')
+        let canvasDiv = document.getElementsByClassName('canvasDiv');
+        canvas = canvasDiv[current_slide].getElementsByTagName('canvas')[0]
+        draw(getContext(canvas), clickXSlide, clickYSlide)
+    }
+    else if(instruction == 'screen_canvas_data'){
+        data_arr = data.split(";")
+        clickXScreen = data_arr[0].split(',')
+        clickYScreen = data_arr[1].split(',')
+        let canvasScreen = document.getElementsByClassName('canvasScreen');
+        canvas = canvasScreen[current].getElementsByTagName('canvas')[0]
+        draw(getContext(canvas), clickXScreen, clickYScreen)
     }
     else if(instruction=='joined'){                         // show message who joined
         if(data.split(" ")[0] != current_user){
@@ -373,7 +435,9 @@ socket.onmessage = function(e) {
                 height: "100%",
                 margin: 0,
                 minScale: 1,
-                maxScale: 1
+                maxScale: 1,
+                // Display controls in the bottom right corner
+                controls: true,
             });
         // add slidechanged eventlistener for onwer of the room only
             Reveal.addEventListener('slidechanged', function(evt) {

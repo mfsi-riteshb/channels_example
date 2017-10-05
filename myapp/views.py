@@ -245,9 +245,9 @@ class ScreenView(View):
                 Redirect to login
         """
         if request.user.is_authenticated:
-            room_id = self.kwargs['pk']
+            room_id = self.kwargs.get('pk', None)
             try:
-                room = Room.objects.get(pk=room_id, user=request)
+                room = Room.objects.get(id=room_id, user=request.user)
             except Room.DoesNotExist:
                 return Http404("Room Does Not Exist")
             form = self.form(request.POST)
