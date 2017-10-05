@@ -302,7 +302,7 @@ socket.onmessage = function(e) {
     if (instruction == 'slide_change'){                     // Change slide
         Reveal.slide(parseInt(data));
         current_slide = parseInt(data)
-        $("#current_slide").text(current_slide)
+        $("#current_slide").text(current_slide + 1)
     }
     else if(instruction=='canvas_data'){                    //show canvas data
         data_arr = data.split(";")
