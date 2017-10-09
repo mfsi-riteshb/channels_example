@@ -33,6 +33,23 @@
                     
                 </div>
             </div>
+            <div class="row" style="padding:10px;" id="toolbar">
+                <div class="col s12">
+                    <i class="fa fa-pencil active" aria-hidden="true" id="pencil"></i>
+                    <i class="fa fa-paint-brush" aria-hidden="true" id="paint_brush"></i>
+                    <i class="fa fa-eraser" aria-hidden="true" id="eraser"></i>
+                    <i class="fa fa-square-o" aria-hidden="true" id="square"></i>
+                    <i class="fa fa-circle" aria-hidden="true" id="circle"></i>
+                    <i class="fa fa-line" aria-hidden="true" id="line"></i>
+                    <i> <input type="color" name="favcolor" id="colorpicker" value="#ff0000"></i>
+                    <i class="fa fa-div" aria-hidden="true" id="sizes">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </i>
+                </div>
+
+            </div>
             {% endif %}
              {% if screens %}
                  <div class="col s12 m12">
@@ -126,9 +143,10 @@ var current_user = "{{ user }}"
 var canvasX;
 var canvasY;
 var strokestyle = 'green'
-var lineWidth = '5'
+var lineWidth = '1'
+var current_tool = 'pencil'
 var current_slide=0;
-
+var compostion_type = 'source-over';
 
 /* Functions used by both owner and attendees of room */
 
@@ -143,17 +161,58 @@ function getContext(canvas) {
     return ctx
 }
 
+fillCircle = function(ctx, x, y, radius, fillColor) {
+    ctx.fillStyle = fillColor;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+};
 // Passing context of current slide canvas and draw on it.
 function draw(ctx, clickX, clickY){
     for(var i=0 ; i < clickX.length; i++) {
-         
+        ctx.globalCompositeOperation = compostion_type;
         ctx.beginPath();              
-        ctx.lineWidth = "5";
-        ctx.strokeStyle = "green";  // Green path
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokestyle;  // Green path
         ctx.moveTo(clickX[i-1], clickY[i-1] );
         ctx.lineTo(clickX[i], clickY[i]);
         ctx.stroke();  // Draw it
 
+    }
+}
+
+function erase(ctx, clickX, clickY) {
+    var radius = 10; // or whatever
+    var fillColor = strokestyle;
+    ctx.globalCompositeOperation = 'destination-out';
+    fillCircle(ctx, clickX, clickY, radius, fillColor);
+
+}
+
+function upadteToolAndComposition(elem_id){
+    if(elem_id=='pencil'){
+        current_tool = 'pencil'
+        lineWidth = '1'
+        compostion_type = 'source-over'
+    }
+    else if(elem_id=="paint_brush"){
+        current_tool = 'paint_brush'
+        lineWidth = '5'
+        compostion_type = 'source-over'
+    }
+    else if(elem_id=="square"){
+        current_tool = 'square'
+    }
+    else if(elem_id=="circle"){
+        current_tool = 'circle'
+    }
+    else if(elem_id=="line"){
+        current_tool = 'line'
+    }
+    else if(elem_id=="eraser"){
+        current_tool = 'eraser'
+        compostion_type = 'destination-out'
     }
 }
 
@@ -293,7 +352,23 @@ function updateActiveUserList(container, user_arr) {
 
         });
 
+
     }
+    $("#colorpicker").on('change', function(e){
+        strokestyle = e.target.value
+    });
+
+
+    $("#toolbar i.fa").on('click', function(e){
+        $(this).siblings('i').removeClass('active');
+        $(this).addClass('active')
+        elem_id = e.target.id
+        upadteToolAndComposition(elem_id)
+        str = "tool:-"+ elem_id;
+        socket.send(str)
+
+
+    });
 
     var canvasScreen = document.getElementsByClassName('canvasScreen');
     for (var k=0; k< canvasScreen.length; k++){
@@ -303,10 +378,9 @@ function updateActiveUserList(container, user_arr) {
            // console.log(e.pageX, e.pageY);
         });
         canvas.addEventListener('mousemove', function(e){
-            if(paintScreen==true){
+            if(paintScreen==true && (current_tool=='pencil' || current_tool =='paint_brush' || current_tool == 'eraser')){
                clickXScreen.push(e.pageX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft()));
                clickYScreen.push(e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop));
-
                draw(getContext(e.target), clickXScreen, clickYScreen);
             }
 
@@ -320,7 +394,7 @@ function updateActiveUserList(container, user_arr) {
             socket.send(str)
             clickXScreen = Array()
             clickYScreen = Array()
-
+            
         });
 
     }
@@ -389,6 +463,10 @@ socket.onmessage = function(e) {
     }
     else if(instruction=='next' || instruction == 'previous'){                                                   // change screen fot room having screens
        changeScreen(data)
+    }
+    else if(instruction =='tool'){
+        elem_id = data
+        upadteToolAndComposition(elem_id)
     }
 }
 // socket signals recieved by owner of the room.
