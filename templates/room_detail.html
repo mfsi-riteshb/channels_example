@@ -42,7 +42,7 @@
                     <i class="fa fa-circle" aria-hidden="true" id="circle"></i>
                     <i class="fa fa-line" aria-hidden="true" id="line"></i>
                     <i> <input type="color" name="favcolor" id="colorpicker" value="#ff0000"></i>
-                    <i class="fa fa-div" aria-hidden="true" id="sizes">
+                    <i class="fa-div" aria-hidden="true" id="sizes">
                         <span></span>
                         <span></span>
                         <span></span>
@@ -61,7 +61,7 @@
                 <hr>
                 <div id="text_group" style="border: solid 1 px black; padding: 10px; margin: 10px;">
                 {% for screen in screens %}
-                    <div style="display:none;" class="canvasScreen">
+                    <div style="display:none;position:relative;" class="canvasScreen">
                          {{ screen.content|safe }}
                            <!--{% if is_owner %}
                         <a href="/room/{{ room.id }}/screen/{{ screen.id }}"<button style="position:absolute;bottom:0px; right:0px;" class="waves-effect waves-light btn" >Edit Screen</button></a>
@@ -147,6 +147,13 @@ var lineWidth = '1'
 var current_tool = 'pencil'
 var current_slide=0;
 var compostion_type = 'source-over';
+var element;
+var mouse = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0
+};
 
 /* Functions used by both owner and attendees of room */
 
@@ -203,9 +210,11 @@ function upadteToolAndComposition(elem_id){
     }
     else if(elem_id=="square"){
         current_tool = 'square'
+        compostion_type = 'source-over'
     }
     else if(elem_id=="circle"){
         current_tool = 'circle'
+        compostion_type = 'source-over'
     }
     else if(elem_id=="line"){
         current_tool = 'line'
@@ -258,6 +267,16 @@ function showMessage(message){
         showHideTransition : 'slide'  // It can be plain, fade or slide
     })
 }
+function setMousePosition(e) {
+        var ev = e || window.event; //Moz || IE
+        if (ev.pageX) { //Moz
+            mouse.x = (e.pageX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft()));
+            mouse.y = (e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop))
+        } else if (ev.clientX) { //IE
+            mouse.x = (e.clientX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft()));
+            mouse.y = (e.clientY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop))
+        }
+    };
 
 //Upadte list of current active user.
 function updateActiveUserList(container, user_arr) {
@@ -358,6 +377,11 @@ function updateActiveUserList(container, user_arr) {
         strokestyle = e.target.value
     });
 
+    $(".fa-div span").on('click',function(e){
+        $(this).siblings('span').css('background', 'grey');
+        $(this).css('background', 'black');
+    });
+
 
     $("#toolbar i.fa").on('click', function(e){
         $(this).siblings('i').removeClass('active');
@@ -375,6 +399,43 @@ function updateActiveUserList(container, user_arr) {
         canvas = canvasScreen[k].getElementsByTagName('canvas')[0]
         canvas.addEventListener('mousedown',function(e){
             paintScreen=true;
+            if(current_tool=='square'){
+                if(!element){
+                    mouse.startX = e.pageX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft());
+                    mouse.startY = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop);
+                    element = document.createElement('div');
+                    element.style.border = lineWidth + 'px solid ' + strokestyle; 
+                    element.className = 'rectangle'
+                    element.style.left = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop) + 'px';
+                    element.style.top = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop) + 'px';
+                   $(e.target).parent('.canvasScreen').append(element)
+                }
+            }
+            if(current_tool=='circle'){
+                if(!element){
+                    mouse.startX = e.pageX - (getOffsetLeft(e.target)-$("#text_group").scrollLeft());
+                    mouse.startY = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop);
+                    element = document.createElement('div');
+                    element.style.border = lineWidth + 'px solid ' + strokestyle; 
+                    element.className = 'circle'
+                    element.style.left = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop) + 'px';
+                    element.style.top = e.pageY - (getOffsetTop(e.target)-$("#text_group").scrollTop()-document.body.scrollTop) + 'px';
+                    $(e.target).parent('.canvasScreen').append(element)
+                }
+            }
+            else if(current_tool=='line'){
+                    isDown = true;
+                    var pointer = canvas.getPointer(o.e);
+                    var points = [ pointer.x, pointer.y, pointer.x, pointer.y ];
+                    line = new fabric.Line(points, {
+                      strokeWidth: 5,
+                      fill: 'red',
+                      stroke: 'red',
+                      originX: 'center',
+                      originY: 'center'
+                    });
+                    e.target.add(line);
+            }
            // console.log(e.pageX, e.pageY);
         });
         canvas.addEventListener('mousemove', function(e){
@@ -384,16 +445,69 @@ function updateActiveUserList(container, user_arr) {
                draw(getContext(e.target), clickXScreen, clickYScreen);
             }
 
+            if( current_tool=='square'){
+                if(element){
+                    setMousePosition(e);
+                    element.style.width = Math.abs( mouse.x- mouse.startX) + 'px';
+                    element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
+                    element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
+                    element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+                }   
+            }
+            if( current_tool=='circle') {
+                if(element){
+                    setMousePosition(e);
+                    element.style.width = Math.abs( mouse.x- mouse.startX) + 'px';
+                    element.style.height = Math.abs(mouse.x - mouse.startX) + 'px';
+                    element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
+                    element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+                }   
+            }
+
         });
         canvas.addEventListener('mouseleave', function(e){
             paintScreen = false
         });
         canvas.addEventListener('mouseup', function(e){
+            if(current_tool=='square'){
+                let left = parseInt(element.style.left);
+                let top = parseInt(element.style.top);
+                let width = parseInt(element.style.width);
+                let height = parseInt(element.style.height);
+                element.parentNode.removeChild(element);
+                ctx = getContext(e.target);
+                ctx.globalCompositeOperation = compostion_type;
+                ctx.lineWidth=lineWidth;
+                ctx.strokeStyle=strokestyle;
+                ctx.rect(left,top,width,height);
+                ctx.stroke();
+                str = "square:-" + left +","+top +","+width+","+height;
+                socket.send(str);
+                element = undefined;
+            }
+            else if(current_tool=='circle'){
+                let left = parseInt(element.style.left);
+                let top = parseInt(element.style.top);
+                let width = parseInt(element.style.width);
+                let height = parseInt(element.style.height);
+                element.parentNode.removeChild(element);
+                ctx = getContext(e.target);
+                ctx.globalCompositeOperation = compostion_type;
+                ctx.beginPath();
+                ctx.lineWidth=lineWidth;
+                ctx.strokeStyle=strokestyle;
+                ctx.arc(left+width/2,top+width/2,width/2, 0, 2 * Math.PI);
+                ctx.stroke();
+                element = undefined;
+            }
+            else{
             paintScreen = false;
             str = "screen_canvas_data:-" + clickXScreen.join(',') + ";" + clickYScreen.join(',')
             socket.send(str)
             clickXScreen = Array()
             clickYScreen = Array()
+        }
+
             
         });
 
@@ -401,7 +515,7 @@ function updateActiveUserList(container, user_arr) {
 {% endif %}
        
 // Make socket connection once user enters the room
-socket = new WebSocket("wss://" + window.location.host + "/room/{{ room.id }}");
+socket = new WebSocket("ws://" + window.location.host + "/room/{{ room.id }}");
 var current = {{ current_screen }};
 var previous = current;
 var group_ele = null;
@@ -467,6 +581,21 @@ socket.onmessage = function(e) {
     else if(instruction =='tool'){
         elem_id = data
         upadteToolAndComposition(elem_id)
+    }
+    else if(instruction == 'square'){
+        arr = data.split(',')
+        let left = parseInt(arr[0])
+        let top = parseInt(arr[1])
+        let width = parseInt(arr[2])
+        let height = parseInt(arr[3])
+        let canvasScreen = document.getElementsByClassName('canvasScreen');
+        let canvas = canvasScreen[current].getElementsByTagName('canvas')[0]
+        let ctx = getContext(canvas);
+        ctx.lineWidth=lineWidth;
+        ctx.strokeStyle=strokestyle;
+        ctx.rect(left,top,width,height);
+        ctx.stroke();
+           
     }
 }
 // socket signals recieved by owner of the room.
