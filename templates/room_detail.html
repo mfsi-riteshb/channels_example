@@ -515,7 +515,7 @@ function updateActiveUserList(container, user_arr) {
 {% endif %}
        
 // Make socket connection once user enters the room
-socket = new WebSocket("ws://" + window.location.host + "/room/{{ room.id }}");
+socket = new WebSocket("wss://" + window.location.host + "/room/{{ room.id }}");
 var current = {{ current_screen }};
 var previous = current;
 var group_ele = null;
