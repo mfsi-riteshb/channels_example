@@ -7,10 +7,10 @@
     <h1 style="text-align: center;"><u>Add Screen</u></h1>
     <br>
     <div class="row">
-        <div class="col-md-6">
-            <canvas id='c' style='border : solid red 2px; background: none;' width="800" height="770"></canvas>
+        <div class="col-md-8">
+            <canvas id='c' style='border : solid red 2px; background: none;' width="1000" height="770"></canvas>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div style="display: inline-block; margin-left: 10px">
                 <button id="drawing-mode" class="btn btn-lg btn-info">Enter Drawing Mode</button>
                 <button id="clear-canvas" class="btn btn-sm btn-danger">Reset All Work</button>
@@ -113,10 +113,11 @@ var canvas = new fabric.Canvas('c');
 
 
 // Set Background Image on Canvas Element
-// canvas.setBackgroundImage('https://etc.usf.edu/presentations/backgrounds/grid/grid_04/1307m.gif',
-//     canvas.renderAll.bind(canvas), {
-//         // crossOrigin: "Anonymous",
-//     });
+  url ="http://" + window.location.host + '/media/1307m.gif'
+canvas.setBackgroundImage(url,
+    canvas.renderAll.bind(canvas), {
+        // crossOrigin: "Anonymous",
+    });
 
 // // Render Interactive Text Box
 // function addITextBox() {
@@ -179,8 +180,9 @@ var drawingModeEl = $$('drawing-mode'),
 
     clearEl.onclick = function() { 
         canvas.clear();
-        canvas.setBackgroundImage('https://etc.usf.edu/presentations/backgrounds/grid/grid_04/1307m.gif', 
-    canvas.renderAll.bind(canvas));
+        url = window.location.host
+        canvas.setBackgroundImage("http://" + window.location.href+'/media/1307m.gif', 
+    	canvas.renderAll.bind(canvas));
     };
 
 

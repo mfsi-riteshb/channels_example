@@ -127,13 +127,15 @@ transform-origin: -18% 0%;
 #member_list {
   position: fixed;
   right: 38px;
-  bottom: -24px;
+  bottom: 0px;
   width: 328px;
   height: auto;
   border: 1px solid black;
 }
 #show_hide_members {
   cursor: pointer;
+  background: grey;
+  height: 30px;
 }
 #message_list {
   height: 300px;
@@ -246,24 +248,7 @@ left:0% !important;
     
 		{% block content %}
 		{% endblock %}
-	
-  <div class="row card" id="member_list">
-            <div >
-              <p class="center-align" id="show_hide_members"> Members</p>
-            </div>
-            <div class="row " id="chat_active_users">
-                {% if is_owner%}
-                <ul id="members_list_owner" class="collection">
-                </ul>
-                {% else %}
-                <ul>
-                 <li>{{ room.user }}(Creator)</li>
-                </ul>
-                <ul id="members_list_attendees" class="collection">
-                </ul>
-                {% endif %}
-            </div>
-    </div>
+
 </body>
 
 <script>
