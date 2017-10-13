@@ -1,15 +1,317 @@
 {% extends 'base.html' %} 
+{% load staticfiles %}
 {% block content %}
 <script type="text/javascript" src="/static/ckeditor/ckeditor-init.js"></script>
 <script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
-<div class="container">
-	<h2>Add content Of Screen</h2>
+<!-- <div class="container"> -->
+    <h1 style="text-align: center;"><u>Add Screen</u></h1> <br>
+    
     <div class="row">
-        <div class="lg12">
-            <canvas id='c' style='border : solid red 2px;' width="800" height="770"></canvas>   
+        <div class="col-md-6">
+            <canvas id='c' style='border : solid red 2px; background: none;' width="800" height="770"></canvas>   
+        </div>
+        <div class="col-md-6">
+
+            <div style="display: inline-block; margin-left: 10px">
+        <button id="drawing-mode" class="btn btn-lg btn-info">Enter Drawing Mode</button>
+        <button id="clear-canvas" class="btn btn-sm btn-danger">Reset All Work</button>
+        <button id="canvas2png" onclick="canvas2png()" class="btn btn-sm btn-primary">View as PNG</button><br>
+
+
+        <div id="drawing-mode-options" style="display: none;">
+            <br>
+            <label for="drawing-mode-selector">Mode:</label>
+            <select id="drawing-mode-selector" class="form-control">
+                <option>Pencil</option>
+                <option>Circle</option>
+                <option>Spray</option>
+                <option>Pattern</option>
+                <option>hline</option>
+                <option>vline</option>
+                <option>square</option>
+                <option>diamond</option>
+                <option>texture</option>
+            </select> <br>
+
+            <label for="drawing-line-width">Line width:</label>
+            <span class="info">20</span><input type="range" value="20" min="0" max="150" id="drawing-line-width" class="form-control"> <br>
+
+            <label for="drawing-color">Line color:</label>
+            <input type="color" value="#005E7A" id="drawing-color" class="form-control"> <br>
+
+            <label for="drawing-shadow-color">Shadow color:</label>
+            <input type="color" value="#005E7A" id="drawing-shadow-color" class="form-control"><br>
+
+            <label for="drawing-shadow-width">Shadow width:</label>
+            <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width" class="form-control">  <br>
+
+            <label for="drawing-shadow-offset">Shadow offset:</label>
+            <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset" class="form-control"> <br>
+
         </div>
     </div>
-</div>
-</body>
+    <br><br><hr style="height:1px;border:none;color:#333;background-color:#333;"><br>
+        <div id="other-mode-options">
+            <button onclick="deleteActiveObject()" class="btn btn-warning">Delete Active Object</button>
+            <button onclick="addITextBox()" class="btn btn-primary">Add Text Box</button>
+             <label class="btn-bs-file btn btn-primary">
+                Upload Image
+                <input type="file" id="file" />
+            </label>
+        </div>
+            
 
+        </div>
+    </div>
+
+
+
+<!-- </div> -->
+
+<script type="text/javascript">
+    
+    // Get Canvas Element
+var canvas = new fabric.Canvas('c');
+
+
+// Set Background Image on Canvas Element
+canvas.setBackgroundImage('https://www.skybell.ph/wp-content/uploads/2015/09/skybell-plain-white-tshirt.png', 
+    canvas.renderAll.bind(canvas), {
+        // crossOrigin: "Anonymous",
+    });
+
+// Render Interactive Text Box
+function addITextBox() {
+    canvas.add(new fabric.IText('Tap and Type', { 
+        fontFamily: 'Comic Sans black',
+        left: 300, 
+        top: 200,
+    }));
+}
+
+
+// Render Delete Active Object Button
+function deleteActiveObject() {
+    canvas.remove(canvas.getActiveObject());
+}
+
+// Render Image Upload on Canvas
+document.getElementById('file').addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function (f) {
+        var data = f.target.result;                    
+        fabric.Image.fromURL(data, function (img) {
+            var oImg = img.set({left: 350, top: 400, angle: 00,width:100, height:100}).scale(0.9);
+            canvas.add(oImg).renderAll();
+            var a = canvas.setActiveObject(oImg);
+            var dataURL = canvas.toDataURL({format: 'png', quality: 0.8});
+        });
+    };
+    reader.readAsDataURL(file);
+});
+
+
+
+var $ = function(id){return document.getElementById(id)};  
+fabric.Object.prototype.transparentCorners = false;
+
+var drawingModeEl = $('drawing-mode'),
+    drawingOptionsEl = $('drawing-mode-options'),
+    otherOptionsEl = $('other-mode-options'),
+    drawingColorEl = $('drawing-color'),
+    drawingShadowColorEl = $('drawing-shadow-color'),
+    drawingLineWidthEl = $('drawing-line-width'),
+    drawingShadowWidth = $('drawing-shadow-width'),
+    drawingShadowOffset = $('drawing-shadow-offset'),
+    clearEl = $('clear-canvas');
+
+    clearEl.onclick = function() { 
+        canvas.clear();
+        canvas.setBackgroundImage('https://www.skybell.ph/wp-content/uploads/2015/09/skybell-plain-white-tshirt.png', 
+    canvas.renderAll.bind(canvas));
+    };
+
+    drawingModeEl.onclick = function() {
+        canvas.isDrawingMode = !canvas.isDrawingMode;
+        if (canvas.isDrawingMode) {
+            drawingModeEl.innerHTML = 'Exit Drawing Mode';
+            drawingOptionsEl.style.display = '';
+            otherOptionsEl.style.display = 'none';
+        }
+        else {
+            drawingModeEl.innerHTML = 'Enter Drawing Mode';
+            drawingOptionsEl.style.display = 'none';
+            otherOptionsEl.style.display = '';
+        }
+    };
+
+    if (fabric.PatternBrush) {
+        var vLinePatternBrush = new fabric.PatternBrush(canvas);
+    
+        vLinePatternBrush.getPatternSrc = function() {
+            
+            var patternCanvas = fabric.document.createElement('canvas');
+            patternCanvas.width = patternCanvas.height = 10;
+            var ctx = patternCanvas.getContext('2d');
+
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(0, 5);
+            ctx.lineTo(10, 5);
+            ctx.closePath();
+            ctx.stroke();
+
+            return patternCanvas;
+        };
+
+        var hLinePatternBrush = new fabric.PatternBrush(canvas);
+        
+        hLinePatternBrush.getPatternSrc = function() {
+            var patternCanvas = fabric.document.createElement('canvas');
+            patternCanvas.width = patternCanvas.height = 10;
+            var ctx = patternCanvas.getContext('2d');
+
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(5, 0);
+            ctx.lineTo(5, 10);
+            ctx.closePath();
+            ctx.stroke();
+
+            return patternCanvas;
+        };
+
+    var squarePatternBrush = new fabric.PatternBrush(canvas);
+    squarePatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 2;
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.fillStyle = this.color;
+      ctx.fillRect(0, 0, squareWidth, squareWidth);
+
+      return patternCanvas;
+    };
+
+    var diamondPatternBrush = new fabric.PatternBrush(canvas);
+    diamondPatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 5;
+      var patternCanvas = fabric.document.createElement('canvas');
+      var rect = new fabric.Rect({
+        width: squareWidth,
+        height: squareWidth,
+        angle: 45,
+        fill: this.color
+      });
+
+      var canvasWidth = rect.getBoundingRectWidth();
+
+      patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
+      rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
+
+      var ctx = patternCanvas.getContext('2d');
+      rect.render(ctx);
+
+      return patternCanvas;
+    };
+
+    var img = new Image();
+    img.src = 'http://fabricjs.com/assets/honey_im_subtle.png';
+
+    var texturePatternBrush = new fabric.PatternBrush(canvas);
+    texturePatternBrush.source = img;
+  }
+
+  $('drawing-mode-selector').onchange = function() {
+
+    if (this.value === 'hline') {
+      canvas.freeDrawingBrush = vLinePatternBrush;
+    }
+    else if (this.value === 'vline') {
+      canvas.freeDrawingBrush = hLinePatternBrush;
+    }
+    else if (this.value === 'square') {
+      canvas.freeDrawingBrush = squarePatternBrush;
+    }
+    else if (this.value === 'diamond') {
+      canvas.freeDrawingBrush = diamondPatternBrush;
+    }
+    else if (this.value === 'texture') {
+      canvas.freeDrawingBrush = texturePatternBrush;
+    }
+    else {
+      canvas.freeDrawingBrush = new fabric[this.value + 'Brush'](canvas);
+    }
+
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = drawingColorEl.value;
+      canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+      canvas.freeDrawingBrush.shadow = new fabric.Shadow({
+        blur: parseInt(drawingShadowWidth.value, 10) || 0,
+        offsetX: 0,
+        offsetY: 0,
+        affectStroke: true,
+        color: drawingShadowColorEl.value,
+      });
+    }
+  };
+
+  drawingColorEl.onchange = function() {
+    canvas.freeDrawingBrush.color = this.value;
+  };
+  drawingShadowColorEl.onchange = function() {
+    canvas.freeDrawingBrush.shadow.color = this.value;
+  };
+  drawingLineWidthEl.onchange = function() {
+    canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
+    this.previousSibling.innerHTML = this.value;
+  };
+  drawingShadowWidth.onchange = function() {
+    canvas.freeDrawingBrush.shadow.blur = parseInt(this.value, 10) || 0;
+    this.previousSibling.innerHTML = this.value;
+  };
+  drawingShadowOffset.onchange = function() {
+    canvas.freeDrawingBrush.shadow.offsetX = parseInt(this.value, 10) || 0;
+    canvas.freeDrawingBrush.shadow.offsetY = parseInt(this.value, 10) || 0;
+    this.previousSibling.innerHTML = this.value;
+  };
+
+  if (canvas.freeDrawingBrush) {
+    canvas.freeDrawingBrush.color = drawingColorEl.value;
+    canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+    canvas.freeDrawingBrush.shadow = new fabric.Shadow({
+      blur: parseInt(drawingShadowWidth.value, 10) || 0,
+      offsetX: 0,
+      offsetY: 0,
+      affectStroke: true,
+      color: drawingShadowColorEl.value,
+    });
+  }
+
+function canvas2png() {
+    var d=canvas.toDataURL("image/png");
+
+    var img = document.createElement('img');
+    img.src = d;
+
+    var a = document.createElement('a');
+    a.setAttribute("download", "t-shirt.png");
+    a.setAttribute("href", d);
+    a.appendChild(img);
+
+    var w = open("", "", "width=900,height=800");
+    w.document.title = 'Export Image';
+    w.document.body.innerHTML = 'Left-click on the image to save it.';
+    w.document.body.appendChild(a);
+}
+
+
+</script>
 {%endblock%}

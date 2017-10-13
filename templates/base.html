@@ -160,6 +160,27 @@ transform-origin: -18% 0%;
   position: relative;
   top:10px;
 }
+
+
+
+.myCanvas {
+    border: 1px solid black;
+}
+
+.canvas-container { 
+    margin:0 auto ;
+}
+
+.btn-bs-file input[type="file"] {
+    position: absolute;
+    top: -9999999;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    width:100;
+    height:0;
+    outline: none;
+    cursor: inherit;
+}
 </style>
 
 <body>
@@ -215,10 +236,10 @@ transform-origin: -18% 0%;
        {% block head_list %}
        {% endblock %}
     </nav>-->
-    <div class="container">
+    
 		{% block content %}
 		{% endblock %}
-	</div>
+	
   <div class="row card" id="member_list">
             <div >
               <p class="center-align" id="show_hide_members"> Members</p>
@@ -237,6 +258,7 @@ transform-origin: -18% 0%;
             </div>
     </div>
 </body>
+
 <script>
 (function($){
   $(function(){
@@ -253,6 +275,6 @@ transform-origin: -18% 0%;
     <!-- Compiled and minified JavaScript -->
  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.js"></script>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.19/fabric.min.js"></script>
+ <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.19/fabric.min.js"></script> -->
 </html>
 
