@@ -286,7 +286,7 @@ var drawingModeEl = $$('drawing-mode'),
     texturePatternBrush.source = img;
   }
 
-  $('drawing-mode-selector').onchange = function() {
+  $$('drawing-mode-selector').onchange = function() {
 
     if (this.value === 'hline') {
       canvas.freeDrawingBrush = vLinePatternBrush;
