@@ -53,11 +53,54 @@
     <br><br><hr style="height:1px;border:none;color:#333;background-color:#333;"><br>
         <div id="other-mode-options">
             <button onclick="deleteActiveObject()" class="btn btn-warning">Delete Active Object</button>
-            <button onclick="addITextBox()" class="btn btn-primary">Add Text Box</button>
+            <button onclick="displayTextBoxOptions()" class="btn btn-primary">Text Box</button>
              <label class="btn-bs-file btn btn-primary">
                 Upload Image
                 <input type="file" id="file" />
             </label>
+            <div class="row">
+              <div class="col-md-6">
+            <div id="text-box-options" style="display: none;" >
+                
+                <!-- <select class="select2 font-change" data-type="fontFamily">
+                    <option value="Arial">Arial</option>
+                    <option value="Arial Black">Arial Black</option>
+                    <option value="Impact">Impact</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                </select> -->
+                <br>
+                <label>Please Select Text Box Options:</label><br><br>
+                <label>Text Size:</label>
+                <select class="select2 font-change form-control" data-type="fontSize" id="fontSize">
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="16">16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="24" selected="selected">24</option>
+                    <option value="32">32</option>
+                </select>
+                <br>
+                <label>Text Color:</label>
+                <select class="select2 font-change form-control" data-type="color" id="fontColor">
+                    <option value="#000">Black</option>
+                    <option value="#00f">Blue</option>
+                    <option value="#0f0">Green</option>
+                    <option value="#f00">Red</option>
+                </select>
+                <!-- <select class="select2 font-change" data-type="textAlign">
+                    <option value="left">left</option>
+                    <option value="center">center</option>
+                    <option value="right">right</option>
+                </select> -->
+                <br>
+                <button id="add" class="btn btn-sm btn-primary">Add Text Box</button>
+            </div>
+            </div>
+            </div>
+
         </div>
             
 
@@ -80,14 +123,14 @@ canvas.setBackgroundImage('https://etc.usf.edu/presentations/backgrounds/grid/gr
         // crossOrigin: "Anonymous",
     });
 
-// Render Interactive Text Box
-function addITextBox() {
-    canvas.add(new fabric.IText('Tap and Type', { 
-        fontFamily: 'Comic Sans black',
-        left: 300, 
-        top: 200,
-    }));
-}
+// // Render Interactive Text Box
+// function addITextBox() {
+//     canvas.add(new fabric.IText('Tap and Type', { 
+//         fontFamily: 'Comic Sans black',
+//         left: 300, 
+//         top: 200,
+//     }));
+// }
 
 
 // Render Delete Active Object Button
@@ -113,18 +156,29 @@ document.getElementById('file').addEventListener("change", function (e) {
 
 
 
-var $ = function(id){return document.getElementById(id)};  
+var $$ = function(id){return document.getElementById(id)};  
 fabric.Object.prototype.transparentCorners = false;
 
-var drawingModeEl = $('drawing-mode'),
-    drawingOptionsEl = $('drawing-mode-options'),
-    otherOptionsEl = $('other-mode-options'),
-    drawingColorEl = $('drawing-color'),
-    drawingShadowColorEl = $('drawing-shadow-color'),
-    drawingLineWidthEl = $('drawing-line-width'),
-    drawingShadowWidth = $('drawing-shadow-width'),
-    drawingShadowOffset = $('drawing-shadow-offset'),
-    clearEl = $('clear-canvas');
+var drawingModeEl = $$('drawing-mode'),
+    drawingOptionsEl = $$('drawing-mode-options'),
+    otherOptionsEl = $$('other-mode-options'),
+    drawingColorEl = $$('drawing-color'),
+    drawingShadowColorEl = $$('drawing-shadow-color'),
+    drawingLineWidthEl = $$('drawing-line-width'),
+    drawingShadowWidth = $$('drawing-shadow-width'),
+    drawingShadowOffset = $$('drawing-shadow-offset'),
+    clearEl = $$('clear-canvas');
+
+    function displayTextBoxOptions() {
+      
+      textBoxOptionsEl = document.getElementById('text-box-options');
+      if (textBoxOptionsEl.style.display == '') {
+        textBoxOptionsEl.style.display = 'none';
+      } else {
+        textBoxOptionsEl.style.display = '';
+      }
+      
+    }
 
     clearEl.onclick = function() { 
         canvas.clear();
@@ -312,6 +366,70 @@ function canvas2png() {
     w.document.body.appendChild(a);
 }
 
+
+var appObject = function() {
+
+  return {
+    __canvas: canvas,
+    __tmpgroup: {},
+
+    addText: function() {
+      var newID = (new Date()).getTime().toString().substr(5);
+      var text = new fabric.IText('Tap and Type', {
+        fontFamily: 'arial black',
+        fontSize: $( "#fontSize option:selected" ).text(),
+        left: 100,
+        top: 100,
+        myid: newID,
+        objecttype: 'text'
+      });
+      text.setColor($( "#fontColor option:selected" ).text())
+      this.__canvas.add(text);
+      this.addLayer(newID, 'text');
+    },
+    setTextParam: function(param, value) {
+      var obj = this.__canvas.getActiveObject();
+      if (obj) {
+        if (param == 'color') {
+          obj.setColor(value);
+        } else {
+          obj.set(param, value);
+        }
+        this.__canvas.renderAll();
+      }
+    },
+    setTextValue: function(value) {
+      var obj = this.__canvas.getActiveObject();
+      if (obj) {
+        obj.setText(value);
+        this.__canvas.renderAll();
+      }
+    },
+    addLayer: function() {
+
+    }
+
+  };
+}
+
+
+
+$(document).ready(function() {
+
+  var app = appObject();
+
+  $('.font-change').change(function(event) {
+    app.setTextParam($(this).data('type'), $(this).find('option:selected').val());
+  });
+
+  $('#add').click(function() {
+    app.addText();
+  });
+  $('#text-cont').keyup(function() {
+    app.setTextValue($(this).val());
+  })
+
+})
 
 </script>
 {%endblock%}
