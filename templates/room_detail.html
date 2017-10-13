@@ -66,6 +66,7 @@
                     {% else %} There are no screens yet {% endif %}
                 </div>
             </div>
+            <br>
             <div role="tabpanel" class="tab-pane" id="test2">
                 <div class="row" id="slides_screen">
                     {% if is_owner %}
@@ -108,6 +109,24 @@
     </div>
 </div>
 
+    
+  <div class="row card" id="member_list">
+            <div >
+              <p class="center-align" id="show_hide_members"> Members</p>
+            </div>
+            <div class="row " id="chat_active_users">
+                {% if is_owner%}
+                <ul id="members_list_owner" class="collection">
+                </ul>
+                {% else %}
+                <ul>
+                 <li>{{ room.user }}(Creator)</li>
+                </ul>
+                <ul id="members_list_attendees" class="collection">
+                </ul>
+                {% endif %}
+            </div>
+    </div>
 <div class="container-fluid" id="room_detail_section">
   
    <!--- <div class="row">
@@ -319,7 +338,7 @@ function prepareCanvas() {
     for (var k = 0; k < canvasDiv.length; k++) {
         canvas = document.createElement('canvas');
         canvas.setAttribute('width', 1000);
-        canvas.setAttribute('height', 600);
+        canvas.setAttribute('height', 770);
         canvas.setAttribute('id', 'canvas' + k);
         canvas.style.border = "solid 1px black"
         canvasDiv[k].appendChild(canvas);
@@ -336,7 +355,7 @@ function prepareCanvasForScreen() {
     for (var k = 0; k < canvasScreen.length; k++) {
         canvas = document.createElement('canvas');
         canvas.setAttribute('width', 1000);
-        canvas.setAttribute('height', 2000);
+        canvas.setAttribute('height', 770);
         canvas.setAttribute('id', 'canvas' + k);
         canvas.style.border = "solid 1px black"
         img = $(canvasScreen[k]).find('img')
