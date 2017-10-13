@@ -18,6 +18,7 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
 from registration.backends.default.views import RegistrationView
+from django.contrib.auth import views as auth_views
 
 from myapp.views import (
     custom_login,
@@ -27,7 +28,7 @@ from myapp.views import (
     ScreenView,
     ScreenViewDetail
 )
-from myapp.forms import MyRegistrationFormUniqueEmail
+from myapp.forms import MyRegistrationFormUniqueEmail, AuthenticationForm
 
 urlpatterns = [
     url(
@@ -36,8 +37,9 @@ urlpatterns = [
     ),
     url(
         r'login/$',
-        custom_login,
-        name='custom_login'
+        auth_views.login,
+        name='login',
+        kwargs={"authentication_form": AuthenticationForm}
     ),
     url(
         r'^register/$',

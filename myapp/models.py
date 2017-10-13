@@ -25,8 +25,9 @@ class Room(models.Model):
     number_of_current_user = models.IntegerField(default=0)
     number_of_slides = models.IntegerField(default=1)
 
+
 def get_upload_to(instance, filename):
-    return 'screens/%d/%s' % (instance.room, filename)
+    return 'screens/%d/%s' % (instance.room.id, filename)
 
 
 class Screen(models.Model):

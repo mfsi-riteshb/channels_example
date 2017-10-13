@@ -1,4 +1,5 @@
 {% extends 'base.html' %} {% block content %}
+<div class="container">
 <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#test1" aria-controls="test1" role="tab" data-toggle="tab">Room List</a></li>
     <li role="presentation"><a href="#test2" aria-controls="test2" role="tab" data-toggle="tab">Create Room</a></li>
@@ -55,11 +56,11 @@
                     <h2>Create Room</h2>
                     <form method="POST" enctype="multipart/form-data" class="post-form"> {% csrf_token %}
                       <div class="form-group">
-                        <label for="email">Email address:</label>
+                        <label for="email">Room Name</label>
                         {{ form.name }}
                       </div>
                       <div class="form-group">
-                        <label for="description" class="active">Room Name</label>
+                        <label for="description" class="active">Room Description</label>
                         {{ form.description}}
                       </div>
                         <div class="form-group">
@@ -92,6 +93,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 <div class="container-fluid">
     {% endblock %}

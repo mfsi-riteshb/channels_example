@@ -250,7 +250,7 @@ class ScreenView(View):
                 room = Room.objects.get(id=room_id, user=request.user)
             except Room.DoesNotExist:
                 return Http404("Room Does Not Exist")
-            form = self.form(request.POST)
+            form = self.form(request.POST, request.FILES)
             if form.is_valid():
                 screen = form.save(commit=False)
                 screen.room = room

@@ -1,24 +1,22 @@
-{% extends 'base.html' %} {% block head_list %}
-<div class="nav-content">
-    <ul class="tabs tabs-transparent">
-        <li class="tab"><a href="#screens">Work on Screens</a></li>
-        <li class="tab"><a href="#slides_screen">work on Slides</a></li>
-    </ul>
-</div>
-{% endblock%} {% block content %}
+{% extends 'base.html' %} {% block content %}
 <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#test1" aria-controls="test1" role="tab" data-toggle="tab">Room List</a></li>
-    <li role="presentation"><a href="#test2" aria-controls="test2" role="tab" data-toggle="tab">Create Room</a></li>
+    <li role="presentation" class="active"><a href="#test1" aria-controls="test1" role="tab" data-toggle="tab">Work on Screens</a></li>
+    <li role="presentation"><a href="#test2" aria-controls="test2" role="tab" data-toggle="tab">Work on Slides</a></li>
 </ul>
 {% if room %}
-  <div class="card" id="room_detail">
-        <h1> {{ room.name }}<sub>Created by ({{ room.user }})</sub></h1>
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-12 col-sm-12" id="room_detail_section">
+     <h1> {{ room.name }}<sub>Created by ({{ room.user }})</sub></h1>
         <hr>
         <label>Description</label>
         <p> {{ room.description }}</p>
+    </div> 
     </div>
-<div class="container-fluid">
-    <div class="col-md-8 col-sm-8">
+</div>
+<div class="container">
+    <div class="col-md-12 col-sm-12">
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="test1">
                 <div class="row">
@@ -32,7 +30,7 @@
                         </div>
                     </div>
                     <div class="row" style="padding:10px;" id="toolbar">
-                        <div class="col sm-10 col-md-10">
+                        <div class="col sm-12 col-md-12">
                             <i class="fa fa-pencil active" aria-hidden="true" id="pencil"></i>
                             <i class="fa fa-paint-brush" aria-hidden="true" id="paint_brush"></i>
                             <i class="fa fa-eraser" aria-hidden="true" id="eraser"></i>
@@ -46,10 +44,6 @@
                                 <span onclick="updateLineWidth(this, '5')"></span>
                             </i>
                         </div>
-                        <div class="col-sm-2 col-md-2">
-                            <i class="fa fa-thumbs-up" id="thumbs_up" aria-hidden="true"></i>
-                            <i class="fa fa-thumbs-down" id="thumbs_down" aria-hidden="true"></i>
-                        </div>
                     </div>
                     {% endif %} {% if screens %}
                     <div class="col sm-12 md-12">
@@ -62,7 +56,7 @@
                     <div id="text_group" style="border: solid 1 px black; padding: 10px; margin: 10px;">
                         {% for screen in screens %}
                         <div style="display:none;position:relative;" class="canvasScreen">
-                            {{ screen.content|safe }}
+                            <img src="/media/{{screen.image}}" style="position:absolute;">
                             <!--{% if is_owner %}
                                 <a href="/room/{{ room.id }}/screen/{{ screen.id }}"<button style="position:absolute;bottom:0px; right:0px;" class="waves-effect waves-light btn" >Edit Screen</button></a>
                                 {% endif %}-->
@@ -75,26 +69,30 @@
             <div role="tabpanel" class="tab-pane" id="test2">
                 <div class="row" id="slides_screen">
                     {% if is_owner %}
-                    <div class="col-sm-5 col-md-5">
-                        <form method="POST">{% csrf_token %}
+                    <div class="row">
+                    <div class="col-md-12">
+                         <form method="POST">{% csrf_token %}
                             <input type="hidden" name="_method" value="put" />
                             <label>Number of slides</label>
-                            <select class="browser-default" name="number_of_slides">
+                            <select class="browser-default form-control" name="number_of_slides">
                                 <option value="1" selected>1</option>
                                 <option value="2">2</option>
                                 <option value="5">5</option>
                             </select>
-                            <button type="submit" class="waves-effect waves-light btn">Add Slide</button>
+                            <button type="submit" class="btn btn-primary">Add Slide</button>
                         </form>
                     </div>
+                    </div>
                     {% endif %}
-                    <div class="col sm-10 col-md-10">
-                        <span><label>Number of slides:-</label>
+                    <div class="row">
+                    <div class="col-md-12">
+                     <span><label>Number of slides:-</label>
                         {{ room.number_of_slides }}</span>
                         <span id="current_slide_number"><label>Current Slide:-</label>
                         <span id="current_slide">1</span></span>
                     </div>
-                    <div class="col-sm-8 col-md-8">
+                    </div>
+                    <div class="row">
                         <div class="reveal">
                             <div class="slides">
                                 {%for number in number_of_slides %}
@@ -108,18 +106,6 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-4 col-md-4 ">
-            <div class="row card" id="active_users">
-                <h5 class="center-align"> Message</h5>
-                <ul id="message_list">
-                </ul>
-                <div id="input_btn_div">
-                    <input type="text" id="message_input">
-                    <button class="waves-effect waves-light btn" disabled="true" id="message_btn">Send</button>
-                </div>
-            </div>
-    </div>
-
 </div>
 
 <div class="container-fluid" id="room_detail_section">
@@ -332,7 +318,7 @@ function prepareCanvas() {
     var canvasDiv = document.getElementsByClassName('canvasDiv');
     for (var k = 0; k < canvasDiv.length; k++) {
         canvas = document.createElement('canvas');
-        canvas.setAttribute('width', 700);
+        canvas.setAttribute('width', 1000);
         canvas.setAttribute('height', 600);
         canvas.setAttribute('id', 'canvas' + k);
         canvas.style.border = "solid 1px black"
@@ -349,15 +335,17 @@ function prepareCanvasForScreen() {
     ctx = [];
     for (var k = 0; k < canvasScreen.length; k++) {
         canvas = document.createElement('canvas');
-        canvas.setAttribute('width', 700);
+        canvas.setAttribute('width', 1000);
         canvas.setAttribute('height', 2000);
         canvas.setAttribute('id', 'canvas' + k);
         canvas.style.border = "solid 1px black"
-        text = $(canvasScreen[k]).html()
+        img = $(canvasScreen[k]).find('img')
+        canvas.style.background = "url('"+img[0].src+"')";
+        canvas.style.backgroundRepeat = "no-repeat";
         $(canvasScreen[k]).empty()
         canvasScreen[k].appendChild(canvas);
         ctx = getContext(canvas)
-        rasterizeHTML.drawHTML(text, canvas);
+      //  rasterizeHTML.drawHTML(text, canvas);
 
     }
 }
@@ -442,18 +430,7 @@ for (var k = 0; k < canvasScreen.length; k++) {
                 $(e.target).parent('.canvasScreen').append(element)
             }
         } else if (current_tool == 'line') {
-            var canvas = new fabric.Canvas(e.target.id, { selection: false });
-            isDown = true;
-            var pointer = canvas.getPointer(o.e);
-            var points = [pointer.x, pointer.y, pointer.x, pointer.y];
-            line = new fabric.Line(points, {
-                strokeWidth: 5,
-                fill: 'red',
-                stroke: 'red',
-                originX: 'center',
-                originY: 'center'
-            });
-            e.target.add(line);
+
         }
         // console.log(e.pageX, e.pageY);
     });
@@ -661,7 +638,7 @@ if (socket.readyState == WebSocket.OPEN) socket.onopen();
 Reveal.initialize({
     width: "100%",
     height: "100%",
-    margin: 0,
+    center: false,
     minScale: 1,
     maxScale: 1,
     // Display controls in the bottom right corner
