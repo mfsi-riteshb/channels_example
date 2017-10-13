@@ -12,8 +12,8 @@ class RoomForm(forms.ModelForm):
         model = Room
         fields = ('name', 'description', 'image')
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'validate'}),
-            'description': forms.Textarea(attrs={'class': 'validate'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
 

@@ -49,3 +49,15 @@ class RoomActiveUser(models.Model):
 
     user = models.ForeignKey(User, related_name='active_rooms')
     room = models.ForeignKey(Room, related_name='active_rooms')
+
+
+class RoomMessage(models.Model):
+    """RoomMessage Model."""
+
+    class Meta:
+        """RoomMessage Meta."""
+        verbose_name = 'Room'
+        verbose_name_plural = 'Rooms'
+    user = models.ForeignKey(User, related_name='messsages')
+    room = models.ForeignKey(Room, related_name='messages')
+    message = models.CharField(max_length=1000)

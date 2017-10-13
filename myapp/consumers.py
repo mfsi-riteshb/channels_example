@@ -7,7 +7,7 @@ from channels.auth import (
     channel_session_user_from_http
 )
 
-from .models import Room, RoomActiveUser
+from .models import Room, RoomActiveUser, RoomMessage
 
 
 @channel_session_user_from_http
@@ -109,6 +109,17 @@ def ws_receive(message):
                 else:
                     room.current_screen = total_screens - 1
                 room.save()
+            elif message.content['text'].split(':-')[0] == 'message':
+                RoomMessage.objects.create(
+                    user=message.user,
+                    room=room,
+                    message=message.content['text'].split(':-')[1]
+                )
+                message_str = str(message.user) + ":" + str(message.content['text'].split(':-')[1])
+                message_str = "message:-" + message_str
+                Group('Room-' + str(room_id)).send(
+                    {'text': message_str}
+                )
             else:
                 Group('Room-' + str(room_id)).send(
                     {'text': str(message.content['text'])}

@@ -2,13 +2,16 @@
 <head>
     <!-- Compiled and minified CSS -->
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"></head>
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.5.0/css/reveal.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.1/jquery.toast.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/rasterizehtml/1.2.4/rasterizeHTML.allinone.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.19/fabric.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <style>
 .canvasDiv {
   top:0px !important;
@@ -22,7 +25,10 @@ canvas {
 }
 body {
   overflow-y: scroll;
-  background: #aba0b3;
+}
+.room_div {
+  margin: 20px;
+  box-shadow: 5px 6px 45px grey;
 }
 #room_detail_section  sub{
   font-size: 14px;
@@ -30,6 +36,10 @@ body {
 #room_detail {
   padding: 0px 0px 3px 10px;
   background-color: lavender;
+}
+#room_image_container {
+  height: 100px;
+  width: 100px;
 }
 #screens {
   margin: 10px;
@@ -50,6 +60,7 @@ body {
 #toolbar i {
   padding: 5px 10px 5px 10px;
   background: #ffffff;
+  cursor: pointer;
 
 }
 #toolbar i.active{
@@ -89,6 +100,9 @@ transform-origin: -18% 0%;
     height: 5px;
 
 }
+.fa-div span:hover{
+  cursor: pointer;
+}
 .fa-div span:nth-child(2) {
     width: 10px;
     height: 10px;
@@ -98,10 +112,85 @@ transform-origin: -18% 0%;
     width: 15px;
     height: 15px;
 }
+#thumbs_up {
+  
+}
+#thumbs_down{
+
+}
+#member_list {
+  position: fixed;
+  right: 38px;
+  bottom: -24px;
+  width: 328px;
+  height: auto;
+  border: 1px solid black;
+  background: lavender;
+}
+#show_hide_members {
+  cursor: pointer;
+}
+#message_list {
+  height: 300px;
+  margin-bottom: 0px;
+  background: white;
+  margin-top: 0px;
+  border: 1px solid black;
+  overflow-y: scroll;
+}
+#message_list li{
+      margin: 10px 0px 8px 0px;
+}
+#message_list li span:nth-child(1){
+  font-weight: bold;
+}
+#chat_active_users{
+  display: none;
+}
+#message_input {
+  background: white;
+  border: 1px solid black;
+  width: 72%;
+  height: 32px;
+}
+#message_btn {
+
+}
+#input_btn_div{
+  position: relative;
+  top:10px;
+}
 </style>
 
 <body>
-<nav class="nav-extended light-blue lighten-1">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{% url 'home' %}">Slidy</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+       {% if user.is_authenticated %}
+                  <li><a href="{% url 'auth_logout' %}?next=/login">Log out</a></li>
+                  <li><a>{{ user }}</a></li>
+                {% else %}
+                    <li><a href="{% url 'auth_login' %}">Login</a></li>
+                    <li><a href="{% url 'registration_register' %}">Sign Up</a></li>
+                {% endif %}
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<!---<nav class="nav-extended light-blue lighten-1">
         <div class=" container nav-wrapper">
             <a href="{% url 'home' %}" class="brand-logo">SLIDY</a>
             <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
@@ -125,17 +214,38 @@ transform-origin: -18% 0%;
         </div>
        {% block head_list %}
        {% endblock %}
-    </nav>
+    </nav>-->
     <div class="container">
 		{% block content %}
 		{% endblock %}
 	</div>
+  <div class="row card" id="member_list">
+            <div >
+              <p class="center-align" id="show_hide_members"> Members</p>
+            </div>
+            <div class="row " id="chat_active_users">
+                {% if is_owner%}
+                <ul id="members_list_owner" class="collection">
+                </ul>
+                {% else %}
+                <ul>
+                 <li>{{ room.user }}(Creator)</li>
+                </ul>
+                <ul id="members_list_attendees" class="collection">
+                </ul>
+                {% endif %}
+            </div>
+    </div>
 </body>
 <script>
 (function($){
   $(function(){
 
     $('.button-collapse').sideNav();
+
+    $('#show_hide_members').click(function(){
+      $('#chat_active_users').toggle()
+    });
 
   }); // end of document ready
 })(jQuery); // end of jQuery name space
