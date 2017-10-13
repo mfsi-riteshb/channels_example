@@ -34,7 +34,7 @@
             </select> <br>
 
             <label for="drawing-line-width">Line width:</label>
-            <span class="info">20</span><input type="range" value="20" min="0" max="150" id="drawing-line-width" class="form-control"> <br>
+            <span class="info">20</span><input type="range" value="20" min="1" max="150" id="drawing-line-width" class="form-control"> <br>
 
             <label for="drawing-color">Line color:</label>
             <input type="color" value="#005E7A" id="drawing-color" class="form-control"> <br>
@@ -43,10 +43,10 @@
             <input type="color" value="#005E7A" id="drawing-shadow-color" class="form-control"><br>
 
             <label for="drawing-shadow-width">Shadow width:</label>
-            <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width" class="form-control">  <br>
+            <span class="info"></span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width" class="form-control">  <br>
 
             <label for="drawing-shadow-offset">Shadow offset:</label>
-            <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset" class="form-control"> <br>
+            <span class="info"></span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset" class="form-control"> <br>
 
         </div>
     </div>
@@ -74,22 +74,25 @@
                 <label>Text Size:</label>
                 <select class="select2 font-change form-control" data-type="fontSize" id="fontSize">
                     <option value="10">10</option>
-                    <option value="12">12</option>
                     <option value="14">14</option>
-                    <option value="16">16</option>
                     <option value="18">18</option>
-                    <option value="20">20</option>
-                    <option value="24" selected="selected">24</option>
-                    <option value="32">32</option>
+                    <option value="22" >22</option>
+                    <option value="26">26</option>
+                    <option value="30">30</option>
+                    <option value="34" selected="selected">34</option>
+                    <option value="38">38</option>
+                    <option value="42">42</option>
+                    <option value="46">46</option>
                 </select>
                 <br>
                 <label>Text Color:</label>
-                <select class="select2 font-change form-control" data-type="color" id="fontColor">
+                <input type="color" name="fontColor" id="fontColor">
+                <!-- <select class="select2 font-change form-control" data-type="color" id="fontColor">
                     <option value="#000">Black</option>
                     <option value="#00f">Blue</option>
                     <option value="#0f0">Green</option>
                     <option value="#f00">Red</option>
-                </select>
+                </select> -->
                 <!-- <select class="select2 font-change" data-type="textAlign">
                     <option value="left">left</option>
                     <option value="center">center</option>
@@ -383,7 +386,7 @@ var appObject = function() {
         myid: newID,
         objecttype: 'text'
       });
-      text.setColor($( "#fontColor option:selected" ).text())
+      text.setColor($( "#fontColor" ).val())
       this.__canvas.add(text);
       this.addLayer(newID, 'text');
     },
