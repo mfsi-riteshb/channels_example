@@ -113,7 +113,7 @@ var canvas = new fabric.Canvas('c');
 
 
 // Set Background Image on Canvas Element
-  url ="http://" + window.location.host + '/media/1307m.gif'
+  url ="https://" + window.location.host + '/media/1307m.gif'
 canvas.setBackgroundImage(url,
     canvas.renderAll.bind(canvas), {
         // crossOrigin: "Anonymous",
@@ -181,7 +181,7 @@ var drawingModeEl = $$('drawing-mode'),
     clearEl.onclick = function() { 
         canvas.clear();
         url = window.location.host
-        canvas.setBackgroundImage("http://" + window.location.href+'/media/1307m.gif', 
+        canvas.setBackgroundImage("https://" + window.location.href+'/media/1307m.gif', 
     	canvas.renderAll.bind(canvas));
     };
 
