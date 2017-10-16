@@ -31,16 +31,16 @@
                     </div>
                     <div class="row" style="padding:10px;" id="toolbar">
                         <div class="col sm-12 col-md-12">
-                            <i class="fa fa-pencil active" aria-hidden="true" id="pencil"></i>
-                            <i class="fa fa-paint-brush" aria-hidden="true" id="paint_brush"></i>
-                            <i class="fa fa-eraser" aria-hidden="true" id="eraser"></i>
-                            <i class="fa fa-square-o" aria-hidden="true" id="square"></i>
-                            <i class="fa fa-circle" aria-hidden="true" id="circle"></i>
-                            <i> <input type="color" name="favcolor" id="colorpicker" value="#ff0000"></i>
+                            <i class="fa fa-pencil active" aria-hidden="true" title="pencil" id="pencil"></i>
+                            <i class="fa fa-paint-brush" aria-hidden="true" title="highlighter" id="paint_brush"></i>
+                            <i class="fa fa-eraser" aria-hidden="true" title="erase" id="eraser"></i>
+                            <i class="fa fa-square-o" aria-hidden="true" title="square" id="square"></i>
+                            <i class="fa fa-circle" aria-hidden="true" title="circle" id="circle"></i>
+                            <i> <input type="color" name="favcolor" title="change-color"id="colorpicker" value="#ff0000"></i>
                             <i class="fa-div" aria-hidden="true" id="sizes">
-                                <span onclick="updateLineWidth(this, '1')"></span>
-                                <span onclick="updateLineWidth(this, '3')"></span>
-                                <span onclick="updateLineWidth(this, '5')"></span>
+                                <span onclick="updateLineWidth(this, '1')" title="1px"></span>
+                                <span onclick="updateLineWidth(this, '3')" title="3px"></span>
+                                <span onclick="updateLineWidth(this, '5')" title="5px"></span>
                             </i>
                         </div>
                     </div>
@@ -198,7 +198,12 @@ fillCircle = function(ctx, x, y, radius, fillColor) {
 // Passing context of current slide canvas, and ith value and draw on it.
 // We created this function for code redundancy occuring in below draw method. 
 function actual_draw(ctx, clickX, clickY, i) {
-    ctx.globalAlpha=0.5;
+    if(current_tool== 'paint_brush'){
+            ctx.globalAlpha=0.5;
+    }
+    else{
+        ctx.globalAlpha = 1;
+    }
     ctx.globalCompositeOperation = compostion_type;
     ctx.beginPath();
     ctx.lineWidth = lineWidth;
@@ -236,20 +241,23 @@ function upadteToolAndComposition(elem_id) {
         compostion_type = 'source-over'
     } else if (elem_id == "paint_brush") {
         current_tool = 'paint_brush'
-        lineWidth = '5'
+        lineWidth = '10'
 
         compostion_type = 'source-over'
     } else if (elem_id == "square") {
         current_tool = 'square'
         compostion_type = 'source-over'
+        linewidth = '1'
     } else if (elem_id == "circle") {
         current_tool = 'circle'
         compostion_type = 'source-over'
+        linewidth = '1'
     } else if (elem_id == "line") {
         current_tool = 'line'
     } else if (elem_id == "eraser") {
         current_tool = 'eraser'
         compostion_type = 'destination-out'
+        linewidth = '1'
     }
 }
 
@@ -384,6 +392,10 @@ function prepareCanvasForScreen() {
 
     }
 }
+
+function drawCircleOrSquare(){
+
+}
 prepareCanvas();
 prepareCanvasForScreen()
 
@@ -394,7 +406,6 @@ for (var k = 0; k < canvasDiv.length; k++) {
     canvas = canvasDiv[k].getElementsByTagName('canvas')[0]
     canvas.addEventListener('mousedown', function(e) {
         paintSlide = true;
-        // console.log(e.pageX, e.pageY);
     });
     canvas.addEventListener('mousemove', function(e) {
         if (paintSlide == true) {
@@ -409,8 +420,6 @@ for (var k = 0; k < canvasDiv.length; k++) {
         paintSlide = false
     });
     canvas.addEventListener('mouseup', function(e) {
-        console.log(new Blob([clickXSlide]).size)
-        console.log(new Blob([clickYSlide]).size)
         paintSlide = false;
         str = "canvas_data:-" + clickXSlide.join(',') + ";" + clickYSlide.join(',')
         socket.send(str)
@@ -467,7 +476,6 @@ for (var k = 0; k < canvasScreen.length; k++) {
         } else if (current_tool == 'line') {
 
         }
-        // console.log(e.pageX, e.pageY);
     });
     canvas.addEventListener('mousemove', function(e) {
         if (paintScreen == true && (current_tool == 'pencil' || current_tool == 'paint_brush' || current_tool == 'eraser')) {
@@ -516,6 +524,7 @@ for (var k = 0; k < canvasScreen.length; k++) {
             ctx = getContext(e.target);
             ctx.globalCompositeOperation = compostion_type;
             ctx.lineWidth = lineWidth;
+            ctx.globalAlpha = 1
             ctx.strokeStyle = strokestyle;
             ctx.rect(left, top, width, height);
             ctx.stroke();
@@ -532,6 +541,7 @@ for (var k = 0; k < canvasScreen.length; k++) {
             ctx.globalCompositeOperation = compostion_type;
             ctx.beginPath();
             ctx.lineWidth = lineWidth;
+            ctx.globalAlpha = 1
             ctx.strokeStyle = strokestyle;
             ctx.arc(left + width / 2, top + width / 2, width / 2, 0, 2 * Math.PI);
             ctx.stroke();
@@ -559,7 +569,6 @@ var group_ele = null;
 {% if is_owner == True %}
 
 function nextText() {
-    console.log("send data");
     socket.send("next");
 }
 
@@ -570,7 +579,6 @@ function previousText() {
 // socket signals received by attendees of room.
 {% if is_owner == False %}
 socket.onmessage = function(e) {
-    debugger
     instruction = e.data.split(":-")[0]
     data = e.data.split(":-")[1]
     if (instruction == 'user_joined') { // update list for current active user.
